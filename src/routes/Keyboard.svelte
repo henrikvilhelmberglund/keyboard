@@ -15,7 +15,7 @@
 	// 	.catch((err) => alert(err));
 
 	afterUpdate(() => {
-		document.getElementById("C3").focus();
+		document.getElementById(getMidiNotes()[lowerLimit].name).focus();
 	});
 
 	function setKeyDown(key, bool) {
@@ -28,7 +28,9 @@
 		);
 	}
 
-	let limit;
+	let octave = "4";
+	$: lowerLimit = parseInt(octave) * 12;
+	$: upperLimit = isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36;
 	let output;
 	// let channel;
 	let mouseDown = false;
@@ -38,79 +40,88 @@
 	let instrumentValue = 0;
 	const context = new AudioContext();
 	$: channel = new Soundfont(context, { instrument });
-
-	if (isMobileDevice()) {
-		limit = 61;
-	} else {
-		limit = 73;
-	}
 </script>
 
-<input
-	type="range"
-	name=""
-	id=""
-	class="w-[calc(100vw-60px)]"
-	min="0"
-	max="127"
-	bind:value={instrumentValue}
-	on:change={() => {
-		instrument = getSoundfontNames()[instrumentValue];
-		console.log(instrument);
-	}} />
+<div class="flex">
+	<select class="mr-2 px-2" bind:value={octave} name="" id="">
+		<option value="1">1</option>
+		<option value="2">2</option>
+		<option value="3">3</option>
+		<option value="4">4</option>
+		<option value="5">5</option>
+		<option value="6">6</option>
+		<option value="7">7</option>
+	</select>
+	<input
+		type="range"
+		name=""
+		id=""
+		class="w-[calc(100vw-100px)]"
+		min="0"
+		max="127"
+		bind:value={instrumentValue}
+		on:change={() => {
+			instrument = getSoundfontNames()[instrumentValue];
+			console.log(instrument);
+		}} />
+</div>
 <div id="keyboard" class="!m-px">
-	{#each getMidiNotes() as note, i}
-		{#if i > 35 && i < limit}
-			<button
-				id={note.name}
-				on:touchstart={() => {
-					touching = true;
-					channel.start(note.name);
-					setKeyDown(note.name, true);
-				}}
-				on:touchend={() => {
-					// touching = false;
-					// channel.stop(note.name);
-					setKeyDown(note.name, false);
-				}}
-				on:mousedown={() => {
-					if (touching) return;
-					channel.start(note.name);
-					mouseDown = true;
-					setKeyDown(note.name, true);
-				}}
-				on:mouseup={() => {
-					if (touching) return;
-					channel.stop(note.name);
-					mouseDown = false;
-					setKeyDown(note.name, false);
-				}}
-				on:mouseenter={() => {
-					if (touching) return;
-					if (mouseDown) {
+	{#key octave}
+		{#each getMidiNotes() as note, i}
+			{#if i >= lowerLimit && i <= upperLimit}
+				<button
+					id={note.name}
+					on:touchstart={() => {
+						touching = true;
 						channel.start(note.name);
 						setKeyDown(note.name, true);
-					}
-				}}
-				on:mouseleave={() => {
-					if (touching) return;
-					channel.stop(note.name);
-					setKeyDown(note.name, false);
-				}}
-				on:keydown={(e) => {
-					// console.log(e);
-					if (!keyDown[keyboardNotes[e.code]]) channel.start(keyboardNotes[e.code]);
-					setKeyDown(keyboardNotes[e.code], true);
-				}}
-				on:keyup={(e) => {
-					channel.stop(keyboardNotes[e.code]);
-					setKeyDown(keyboardNotes[e.code], false);
-				}}
-				class:black={note.name.includes("#")}
-				class:!bg-primary-300={keyDown[note.name]}
-				class="border-1 h-64 w-12 rounded border-black bg-white" />
-		{/if}
-	{/each}
+					}}
+					on:touchend={() => {
+						// touching = false;
+						// channel.stop(note.name);
+						setKeyDown(note.name, false);
+					}}
+					on:mousedown={() => {
+						if (touching) return;
+						channel.start(note.name);
+						mouseDown = true;
+						setKeyDown(note.name, true);
+					}}
+					on:mouseup={() => {
+						if (touching) return;
+						channel.stop(note.name);
+						mouseDown = false;
+						setKeyDown(note.name, false);
+					}}
+					on:mouseenter={() => {
+						if (touching) return;
+						if (mouseDown) {
+							channel.start(note.name);
+							setKeyDown(note.name, true);
+						}
+					}}
+					on:mouseleave={() => {
+						if (touching) return;
+						channel.stop(note.name);
+						setKeyDown(note.name, false);
+					}}
+					on:keydown={(e) => {
+						// console.log(e);
+						// TODO fix this nightmare
+						if (!keyDown[getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name])
+							channel.start(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name);
+						setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, true);
+					}}
+					on:keyup={(e) => {
+						channel.stop(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name);
+						setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, false);
+					}}
+					class:black={note.name.includes("#")}
+					class:!bg-primary-300={keyDown[note.name]}
+					class="border-1 h-64 w-12 rounded border-black bg-white" />
+			{/if}
+		{/each}
+	{/key}
 </div>
 
 <style>
