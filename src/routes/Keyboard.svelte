@@ -37,11 +37,13 @@
 	let keyDown = {};
 	let touching = false;
 	let instrument = "marimba";
-	let instrumentValue = 0;
+	let displayInstrument = instrument;
+	let instrumentValue = getSoundfontNames()[instrument];
 	const context = new AudioContext();
 	$: channel = new Soundfont(context, { instrument });
 </script>
 
+<p class="absolute left-0 right-0 w-min dark:text-white">{displayInstrument}</p>
 <div class="flex">
 	<select class="mr-2 px-2" bind:value={octave} name="" id="">
 		<option value="1">1</option>
@@ -60,6 +62,7 @@
 		min="0"
 		max="127"
 		bind:value={instrumentValue}
+		on:input={() => (displayInstrument = getSoundfontNames()[instrumentValue])}
 		on:change={() => {
 			instrument = getSoundfontNames()[instrumentValue];
 			console.log(instrument);
@@ -118,7 +121,7 @@
 					}}
 					class:black={note.name.includes("#")}
 					class:!bg-primary-300={keyDown[note.name]}
-					class="border-1 h-64 w-12 rounded border-black bg-white" />
+					class="border-1 dark:bg-primary-900 h-64 w-12 rounded border-black bg-white" />
 			{/if}
 		{/each}
 	{/key}
