@@ -5,9 +5,6 @@ import UnoCSS from "@unocss/svelte-scoped/vite";
 import { reloadMe } from "./uno.config";
 import { defineConfig } from "vite";
 export default defineConfig({
-	server: {
-		host: true,
-	},
 	plugins: [
 		UnoCSS({
 			injectReset: "@unocss/reset/tailwind.css",
