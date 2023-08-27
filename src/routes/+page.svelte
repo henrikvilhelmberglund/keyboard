@@ -8,9 +8,12 @@
 	import { color } from "$lib/stores";
 	import MeltAccordion from "$lib/melt-examples/MeltAccordion.svelte";
 	import Keyboard from "./Keyboard.svelte";
+	import Drums from "./Drums.svelte";
 
 	// let color = "blue";
 	// $: if (browser) color = localStorage.color;
+
+	let currentInstrument = "keyboard";
 </script>
 
 <main
@@ -18,9 +21,15 @@
 	<header>
 		<ThemeSwitcher />
 		<DarkModeToggle />
+		<button on:click={() => (currentInstrument = "keyboard")} class="btn-primary">Keyboard</button>
+		<button on:click={() => (currentInstrument = "drums")} class="btn-secondary">Drums</button>
 	</header>
 
-	<Keyboard />
+	{#if currentInstrument === "keyboard"}
+		<Keyboard />
+	{:else if currentInstrument === "drums"}
+		<Drums />
+	{/if}
 </main>
 
 <Footer />
