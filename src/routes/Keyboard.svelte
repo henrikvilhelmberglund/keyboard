@@ -15,6 +15,7 @@
 			}
 			// channel.playNote("C3");
 		})
+		.then(onEnabled)
 		.catch((err) => alert(err));
 
 	function onEnabled() {
