@@ -15,19 +15,7 @@
 			}
 			// channel.playNote("C3");
 		})
-		.then(onEnabled)
 		.catch((err) => alert(err));
-
-	function onEnabled() {
-		// Display available MIDI input devices
-		if (WebMidi.outputs.length < 1) {
-			document.body.innerHTML += "No device detected.";
-		} else {
-			WebMidi.outputs.forEach((device, index) => {
-				document.body.innerHTML += `${index}: ${device.name} <br>`;
-			});
-		}
-	}
 
 	afterUpdate(() => {
 		document.getElementById("C2").focus();
