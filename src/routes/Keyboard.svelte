@@ -8,11 +8,7 @@
 			// console.log("WebMidi enabled!");
 			output = WebMidi.outputs[0];
 			// console.log(output);
-			try {
-				channel = output.channels[1];
-			} catch (error) {
-				channel = output.channels[0];
-			}
+			channel = output.channels[1];
 			// channel.playNote("C3");
 		})
 		.catch((err) => alert(err));
