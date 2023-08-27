@@ -1,17 +1,18 @@
 <script>
 	import { getMidiNotes, keyboardNotes } from "$lib/midinotes";
-	import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
+	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
+	import { Soundfont } from "smplr";
 	import { afterUpdate } from "svelte";
 
-	WebMidi.enable()
-		.then(() => {
-			// console.log("WebMidi enabled!");
-			output = WebMidi.outputs[0];
-			// console.log(output);
-			channel = output.channels[1];
-			// channel.playNote("C3");
-		})
-		.catch((err) => alert(err));
+	// WebMidi.enable()
+	// 	.then(() => {
+	// 		// console.log("WebMidi enabled!");
+	// 		output = WebMidi.outputs[0];
+	// 		// console.log(output);
+	// 		channel = output.channels[1];
+	// 		// channel.start("C3");
+	// 	})
+	// 	.catch((err) => alert(err));
 
 	afterUpdate(() => {
 		document.getElementById("C2").focus();
@@ -22,9 +23,11 @@
 	}
 
 	let output;
-	let channel;
+	// let channel;
 	let mouseDown = false;
 	let keyDown = {};
+	const context = new AudioContext();
+	let channel = new Soundfont(context, { instrument: "marimba" });
 </script>
 
 <div id="keyboard">
@@ -33,32 +36,32 @@
 			<button
 				id={note.name}
 				on:mousedown={() => {
-					channel.playNote(note.name);
+					channel.start(note.name);
 					mouseDown = true;
 					setKeyDown(note.name, true);
 				}}
 				on:mouseleave={() => {
-					channel.stopNote(note.name);
+					channel.stop(note.name);
 					setKeyDown(note.name, false);
 				}}
 				on:mouseenter={() => {
 					if (mouseDown) {
-						channel.playNote(note.name);
+						channel.start(note.name);
 						setKeyDown(note.name, true);
 					}
 				}}
 				on:mouseup={() => {
-					channel.stopNote(note.name);
+					channel.stop(note.name);
 					mouseDown = false;
 					setKeyDown(note.name, false);
 				}}
 				on:keydown={(e) => {
 					console.log(e);
-					if (!keyDown[keyboardNotes[e.code]]) channel.playNote(keyboardNotes[e.code]);
+					if (!keyDown[keyboardNotes[e.code]]) channel.start(keyboardNotes[e.code]);
 					setKeyDown(keyboardNotes[e.code], true);
 				}}
 				on:keyup={(e) => {
-					channel.stopNote(keyboardNotes[e.code]);
+					channel.stop(keyboardNotes[e.code]);
 					setKeyDown(keyboardNotes[e.code], false);
 				}}
 				class:black={note.name.includes("#")}
