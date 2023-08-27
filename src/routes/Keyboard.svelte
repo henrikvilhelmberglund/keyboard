@@ -17,6 +17,17 @@
 		})
 		.catch((err) => alert(err));
 
+	function onEnabled() {
+		// Display available MIDI input devices
+		if (WebMidi.inputs.length < 1) {
+			document.body.innerHTML += "No device detected.";
+		} else {
+			WebMidi.inputs.forEach((device, index) => {
+				document.body.innerHTML += `${index}: ${device.name} <br>`;
+			});
+		}
+	}
+
 	afterUpdate(() => {
 		document.getElementById("C2").focus();
 	});
