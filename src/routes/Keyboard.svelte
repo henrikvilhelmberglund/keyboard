@@ -15,6 +15,7 @@
 	// 	.catch((err) => alert(err));
 
 	afterUpdate(() => {
+		if (!isMobileDevice()) return;
 		document.getElementById(getMidiNotes()[lowerLimit].name).focus();
 	});
 
