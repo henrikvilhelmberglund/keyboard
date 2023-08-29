@@ -58,6 +58,8 @@ export const keyboardNotes = {
 };
 
 export const drumSamples = [
+	// TODO for each instrument instead
+	// function seems bugged though? (sampleNames())
 	"clap/cp",
 	"clave/cl",
 	"conga-hi/hc00",
