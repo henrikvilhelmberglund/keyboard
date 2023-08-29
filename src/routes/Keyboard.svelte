@@ -122,7 +122,8 @@
 					}}
 					class:black={note.name.includes("#")}
 					class:!bg-primary-300={keyDown[note.name]}
-					class="border-1 dark:bg-primary-900 h-64 w-12 rounded border-black bg-white" />
+					class:fancy-shadow={keyDown[note.name]}
+					class="dark:bg-primary-900 h-64 w-12 rounded border-0 border-black bg-white shadow-sm shadow-black" />
 			{/if}
 		{/each}
 	{/key}
@@ -130,9 +131,16 @@
 
 <style>
 	.black {
-		@apply absolute h-40 w-8 -translate-x-4 bg-black;
+		@apply absolute h-40 w-8 -translate-x-4 bg-black shadow-none;
 	}
 	#keyboard button {
 		-webkit-tap-highlight-color: transparent;
+	}
+	.fancy-shadow {
+		box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
+			rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset,
+			rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px,
+			rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px,
+			rgba(0, 0, 0, 0.09) 0px 32px 16px;
 	}
 </style>
