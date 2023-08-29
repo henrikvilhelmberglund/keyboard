@@ -75,7 +75,10 @@
 			{#if i >= minimumNoteValue && i <= maximumNoteValue}
 				<button
 					id={note.name}
-					on:touchstart={() => {
+					on:touchstart={(e) => {
+						if (e.touches.length > 1) {
+							e.preventDefault();
+						}
 						touching = true;
 						channel.start(note.name);
 						setKeyDown(note.name, true);
