@@ -16,7 +16,7 @@ export function getMidiNotes() {
 	return midiNotes;
 }
 
-export const keyboardNotes = {
+export const noteValueOffset = {
 	// row1
 	KeyZ: 0,
 	KeyS: 1,
@@ -33,12 +33,14 @@ export const keyboardNotes = {
 	Comma: 12,
 	KeyL: 13,
 	Period: 14,
-	SemiColon: 15,
+	Semicolon: 15,
 	Slash: 16,
 
 	// row3
+	Digit1: 10,
+	KeyQ: 11,
 	KeyW: 12,
-	Digit4: 13,
+	Digit3: 13,
 	KeyE: 14,
 	Digit4: 15,
 	KeyR: 16,

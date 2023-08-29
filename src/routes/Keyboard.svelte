@@ -1,5 +1,5 @@
 <script>
-	import { getMidiNotes, keyboardNotes } from "$lib/midinotes";
+	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
 	import { Soundfont, getSoundfontNames } from "smplr";
 	import { afterUpdate } from "svelte";
@@ -16,7 +16,7 @@
 
 	afterUpdate(() => {
 		if (!isMobileDevice()) return;
-		document.getElementById(getMidiNotes()[lowerLimit].name).focus();
+		document.getElementById(getMidiNotes()[minimumNoteValue].name).focus();
 	});
 
 	function setKeyDown(key, bool) {
@@ -30,8 +30,8 @@
 	}
 
 	let octave = "4";
-	$: lowerLimit = parseInt(octave) * 12;
-	$: upperLimit = isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36;
+	$: minimumNoteValue = parseInt(octave) * 12;
+	$: maximumNoteValue = isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36;
 	let output;
 	// let channel;
 	let mouseDown = false;
@@ -72,7 +72,7 @@
 <div id="keyboard" class="!m-px">
 	{#key octave}
 		{#each getMidiNotes() as note, i}
-			{#if i >= lowerLimit && i <= upperLimit}
+			{#if i >= minimumNoteValue && i <= maximumNoteValue}
 				<button
 					id={note.name}
 					on:touchstart={() => {
@@ -110,15 +110,15 @@
 						setKeyDown(note.name, false);
 					}}
 					on:keydown={(e) => {
-						// console.log(e);
+						console.log(e);
 						// TODO fix this nightmare
-						if (!keyDown[getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name])
-							channel.start(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name);
-						setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, true);
+						if (!keyDown[getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name])
+							channel.start(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name);
+						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, true);
 					}}
 					on:keyup={(e) => {
-						channel.stop(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name);
-						setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, false);
+						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name);
+						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
 					class:black={note.name.includes("#")}
 					class:!bg-primary-300={keyDown[note.name]}

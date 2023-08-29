@@ -1,5 +1,5 @@
 <script>
-	import { drumSamples, getMidiNotes, keyboardNotes } from "$lib/midinotes";
+	import { drumSamples, getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
 	import { DrumMachine, getDrumMachineNames } from "smplr";
 	import { afterUpdate } from "svelte";
@@ -121,7 +121,8 @@
 					setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, false);
 				}}
 				class:!bg-primary-300={keyDown[note.name]}
-				class="border-1 dark:bg-primary-900 h-24 w-24 rounded border-black bg-white text-xs">{note}</button>
+				class="border-1 dark:bg-primary-900 h-24 w-24 rounded border-black bg-white text-xs"
+				>{note}</button>
 			<!-- {/if} -->
 		{/each}
 	{/key}
