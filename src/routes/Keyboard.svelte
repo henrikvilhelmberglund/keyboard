@@ -82,7 +82,7 @@
 					}}
 					on:touchend={() => {
 						// touching = false;
-						// channel.stop(note.name);
+						channel.stop(note.name);
 						setKeyDown(note.name, false);
 					}}
 					on:mousedown={() => {
