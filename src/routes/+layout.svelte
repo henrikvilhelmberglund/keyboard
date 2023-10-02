@@ -7,6 +7,7 @@
 	let routes = {
 		"/keyboard": "Keyboard",
 		"/piano": "Piano",
+		"/mellotron": "Mellotron",
 		"/electricpiano": "Electric Piano",
 		"/drums": "Drums",
 	};
