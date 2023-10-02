@@ -28,9 +28,12 @@
 					<span class="relative">
            
 						<span 
+            class:group-hover:bg-primary-100={url !== currentRoute}
+            class:dark:group-hover:bg-primary-400={url !== currentRoute}
             class:!bg-primary-200={url === currentRoute || url === "/keyboard" && currentRoute === "/"}
+            class:!dark:bg-primary-500={url === currentRoute || url === "/keyboard" && currentRoute === "/"}
             class:!mt-2={url === currentRoute || url === "/keyboard" && currentRoute === "/"}
-            class="border-primary-500 bg-primary-300 absolute z-10 w-36 rounded-2xl border-2 p-1 py-4 text-center transition-all group-active:translate-y-2">{name}</span>
+            class="border-primary-500 bg-primary-300 absolute z-10 w-36 rounded-2xl border-2 p-1 py-4 text-center transition-all ">{name}</span>
 					</span>
 					<span class="border-primary-400 bg-primary-400 absolute inset-0 top-4 w-36 rounded-2xl border-2 p-1 py-6"  />
 				</a>
