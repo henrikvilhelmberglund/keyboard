@@ -46,7 +46,7 @@
 	const piano = new ElectricPiano(new AudioContext(), {
     // TODO add select for instruments
 		instrument: "WurlitzerEP200",
-		volume: 70,
+		volume: 60,
 	});
 </script>
 
