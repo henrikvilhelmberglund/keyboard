@@ -67,20 +67,20 @@
 					on:touchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
 					on:mousedown={(e) => ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ touching, channel, note, e, velocity }))}
 					on:mouseup={() => ([mouseDown, keyDown[note.name]] = handleMouseUp({ touching, channel, note }))}
-					on:mouseenter={() => ([keyDown[note.name]] = handleMouseEnter({ touching, velocity, mouseDown, channel, note }))}
+					on:mouseenter={(e) => ([keyDown[note.name]] = handleMouseEnter({ touching, velocity, mouseDown, channel, note, e }))}
 					on:mouseleave={() => ([keyDown[note.name]] = handleMouseLeave({ touching, mouseDown, channel, note }))}
 					on:keydown={(e) => {
 						console.log(e);
 						// TODO fix this nightmare
 						if (!keyDown[getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name])
 							channel.start({
-								note: getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name,
+								note: getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value,
 								velocity,
 							});
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, true);
 					}}
 					on:keyup={(e) => {
-						channel.stop({note:getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name});
+						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value);
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
 					class:black={note.name.includes("#")}
