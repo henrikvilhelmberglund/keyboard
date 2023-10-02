@@ -36,14 +36,14 @@
 	let mouseDown = false;
 	let keyDown = {};
 	let touching = false;
-  let velocity;
+	let velocity;
 	let instrument = "marimba";
 	let displayInstrument = instrument;
 	let instrumentValue = getSoundfontNames()[instrument];
 	const context = new AudioContext();
 	$: channel = new Soundfont(context, {
 		instrument,
-    volume: 80
+		volume: 80,
 		// loadLoopData: true
 	});
 </script>
@@ -97,7 +97,7 @@
 					}}
 					on:keyup={(e) => {
 						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value);
-            console.log("aaa")
+						console.log("aaa");
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
 					class:black={note.name.includes("#")}
@@ -110,10 +110,31 @@
 					class:!to-primary-100={keyDown[note.name]}
 					class:!bg-primary-300={keyDown[note.name]}
 					class:!dark:bg-primary-600={keyDown[note.name]}
-					class="dark:bg-primary-900 dark:outline-primary-500/40 outline-primary-950/40 outline-solid shadow-primary-600/30 z-10 mx-0 h-64 w-12 rounded-md rounded-t-none bg-white bg-gradient-to-b shadow-md outline-1">
+					class="dark:bg-primary-900 dark:outline-primary-500/40 z-100 outline-primary-950/40 outline-solid shadow-primary-600/30 z-10 mx-0 h-64 w-12 rounded-md rounded-t-none bg-white bg-gradient-to-b shadow-md outline-1">
 					{#if !note.name.includes("#")}
-						<span class="z-1 pointer-events-none relative left-0 top-0 top-1 block h-64 w-12">
+						<span class="pointer-events-none relative left-0 top-0 top-1 block h-64 w-12">
 							<span class="bg-primary-800/20 dark:bg-primary-950 absolute bottom-1 left-0 h-3 w-full rounded-md rounded-t-none" />
+							{#if keyDown[note.name] && !document.documentElement.classList.contains("dark")}
+              <!-- ??? -->
+								<span class="neon-drop-shadow absolute -top-0 h-px" />
+								<span class="neon-drop-shadow2 absolute -bottom-1 h-px" />
+                {:else if keyDown[note.name] && document.documentElement.classList.contains("dark")}
+								<span class="neon-drop-shadow-dark absolute -top-0 h-px" />
+								<span class="neon-drop-shadow2-dark absolute -bottom-1 h-px" />
+                  
+							{/if}
+						</span>
+					{:else}
+						<span class="pointer-events-none relative left-0 top-0 top-1 block h-40 w-7">
+              {#if keyDown[note.name] && !document.documentElement.classList.contains("dark")}
+              <!-- ??? -->
+								<span class="neon-drop-shadow absolute -top-0 h-px" />
+								<span class="neon-drop-shadow2 absolute -bottom-1 h-px" />
+                {:else if keyDown[note.name] && document.documentElement.classList.contains("dark")}
+								<span class="neon-drop-shadow-dark absolute -top-0 h-px" />
+								<span class="neon-drop-shadow2-dark absolute -bottom-1 h-px" />
+                  
+							{/if}
 						</span>
 					{/if}
 				</button>
@@ -132,5 +153,20 @@
 	.fancy-shadow {
 		box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset,
 			rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+	}
+
+	/* TODO turn into unocss shortcuts with regex */
+  /* TODO make it look good */
+	.neon-drop-shadow {
+		box-shadow: 0 0 50px 20px rgb(var(--un-preset-theme-colors-primary-300)); /* Neon green color with a large spread radius */
+	}
+	.neon-drop-shadow-dark {
+		box-shadow: 0 0 50px 20px rgb(var(--un-preset-theme-colors-primary-800)); /* Neon green color with a large spread radius */
+	}
+	.neon-drop-shadow2 {
+		box-shadow: 0 0 50px 20px rgb(var(--un-preset-theme-colors-primary-300)); /* Neon green color with a large spread radius */
+	}
+	.neon-drop-shadow2-dark {
+		box-shadow: 0 0 50px 20px rgb(var(--un-preset-theme-colors-primary-900)); /* Neon green color with a large spread radius */
 	}
 </style>
