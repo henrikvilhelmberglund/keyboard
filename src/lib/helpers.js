@@ -17,8 +17,9 @@ export function handleTouchStart({ channel, note, e }) {
 	}
 	channel.start(note.value);
 	let touching = true;
-	let keyIsDown = true;
-	return [touching, keyIsDown];
+  let keyIsDown = true;
+  let lastKey = note.name;
+	return [touching, keyIsDown, lastKey];
 }
 
 export function handleTouchEnd({ channel, note }) {
@@ -47,9 +48,27 @@ export function handleMouseUp({ touching, channel, note }) {
 	return [mouseDown, keyIsDown];
 }
 
+export function handleTouchMove({ mouseDown, lastKey, channel, note, e, velocity }) {
+	let keyIsDown = false;
+	const touchedKey = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+	console.log(touchedKey);
+	// if (touching) return;
+	let touching = true;
+  // velocity = getVelocity(e);
+  let currentKey = touchedKey.id;
+  console.log("currentKey", currentKey)
+  console.log("lastKey", lastKey)
+	if (currentKey !== lastKey) {
+		channel.start({ note: currentKey });
+		keyIsDown = true;
+	}
+
+	return [keyIsDown, currentKey ];
+}
+
 export function handleMouseEnter({ touching, mouseDown, channel, note, e, velocity }) {
-  let keyIsDown = false;
-  if (touching) return;
+	let keyIsDown = false;
+	if (touching) return;
 	if (mouseDown) {
 		velocity = getVelocity(e);
 		channel.start({ note: note.value, velocity });
@@ -59,8 +78,8 @@ export function handleMouseEnter({ touching, mouseDown, channel, note, e, veloci
 }
 
 export function handleMouseLeave({ touching, channel, note }) {
-  if (touching) return;
-  channel.stop(note.value);
+	if (touching) return;
+	channel.stop(note.value);
 	let keyIsDown = false;
 	return [keyIsDown];
 }
