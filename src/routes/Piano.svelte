@@ -41,7 +41,7 @@
 	// let displayInstrument = instrument;
 	// let instrumentValue = getSoundfontNames()[instrument];
 	const context = new AudioContext();
-	const piano = new SplendidGrandPiano(new AudioContext());
+	const piano = new SplendidGrandPiano(new AudioContext(), {volume: 80});
 </script>
 
 <p class="absolute left-0 right-0 w-min dark:text-white">Piano</p>
