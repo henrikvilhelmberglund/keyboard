@@ -57,7 +57,7 @@ export function handleMouseEnter({ touching, mouseDown, channel, note, velocity 
 
 export function handleMouseLeave({ touching, channel, note }) {
 	if (touching) return;
-	channel.stop(note.name);
+  channel.stop({ note: note.name });
 	let keyIsDown = false;
 	return [keyIsDown];
 }
