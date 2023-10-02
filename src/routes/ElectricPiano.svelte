@@ -1,4 +1,5 @@
 <script>
+	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	import { ElectricPiano, getElectricPianoNames } from "smplr";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
@@ -24,9 +25,7 @@
 	}
 
 	function isMobileDevice() {
-		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-			navigator.userAgent
-		);
+		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
 
 	let octave = "4";
@@ -37,14 +36,15 @@
 	let mouseDown = false;
 	let keyDown = {};
 	let touching = false;
+  let velocity;
 	// let instrument = "marimba";
 	// let displayInstrument = instrument;
 	// let instrumentValue = getSoundfontNames()[instrument];
 	const context = new AudioContext();
 	const instruments = getElectricPianoNames(); // => ["CP80", "PianetT", "WurlitzerEP200"]
 
-	const piano = new ElectricPiano(new AudioContext(), {
-    // TODO add select for instruments
+	const channel = new ElectricPiano(new AudioContext(), {
+		// TODO add select for instruments
 		instrument: "WurlitzerEP200",
 		volume: 60,
 	});
@@ -68,52 +68,24 @@
 			{#if i >= minimumNoteValue && i <= maximumNoteValue}
 				<button
 					id={note.name}
-					on:touchstart={(e) => {
-						if (e.touches.length > 1) {
-							e.preventDefault();
-						}
-						touching = true;
-						piano.start(note.name);
-						setKeyDown(note.name, true);
-					}}
-					on:touchend={() => {
-						// touching = false;
-						piano.stop(note.name);
-						setKeyDown(note.name, false);
-					}}
-					on:mousedown={() => {
-						if (touching) return;
-						piano.start(note.name);
-						mouseDown = true;
-						setKeyDown(note.name, true);
-					}}
-					on:mouseup={() => {
-						if (touching) return;
-						piano.stop(note.name);
-						mouseDown = false;
-						setKeyDown(note.name, false);
-					}}
-					on:mouseenter={() => {
-						if (touching) return;
-						if (mouseDown) {
-							piano.start(note.name);
-							setKeyDown(note.name, true);
-						}
-					}}
-					on:mouseleave={() => {
-						if (touching) return;
-						piano.stop(note.name);
-						setKeyDown(note.name, false);
-					}}
+					on:touchstart={(e) => ([touching, keyDown[note.name]] = handleTouchStart({ channel, note, e }))}
+					on:touchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
+					on:mousedown={(e) => ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ touching, channel, note, e, velocity }))}
+					on:mouseup={() => ([mouseDown, keyDown[note.name]] = handleMouseUp({ touching, channel, note }))}
+					on:mouseenter={(e) => ([keyDown[note.name]] = handleMouseEnter({ touching, velocity, mouseDown, channel, note, e }))}
+					on:mouseleave={() => ([keyDown[note.name]] = handleMouseLeave({ touching, mouseDown, channel, note }))}
 					on:keydown={(e) => {
 						console.log(e);
 						// TODO fix this nightmare
 						if (!keyDown[getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name])
-							piano.start(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name);
+							channel.start({
+								note: getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value,
+								velocity,
+							});
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, true);
 					}}
 					on:keyup={(e) => {
-						piano.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name);
+						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value);
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
 					class:black={note.name.includes("#")}
@@ -129,8 +101,7 @@
 					class="dark:bg-primary-900 dark:outline-primary-500/40 outline-primary-950/40 outline-solid shadow-primary-600/30 z-10 mx-0 h-64 w-12 rounded-md rounded-t-none bg-white bg-gradient-to-b shadow-md outline-1">
 					{#if !note.name.includes("#")}
 						<span class="z-1 pointer-events-none relative left-0 top-0 top-1 block h-64 w-12">
-							<span
-								class="bg-primary-800/20 dark:bg-primary-950 absolute bottom-1 left-0 h-3 w-full rounded-md rounded-t-none" />
+							<span class="bg-primary-800/20 dark:bg-primary-950 absolute bottom-1 left-0 h-3 w-full rounded-md rounded-t-none" />
 						</span>
 					{/if}
 				</button>
@@ -147,10 +118,7 @@
 		-webkit-tap-highlight-color: transparent;
 	}
 	.fancy-shadow {
-		box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
-			rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset,
-			rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px,
-			rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px,
-			rgba(0, 0, 0, 0.09) 0px 32px 16px;
+		box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset,
+			rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
 	}
 </style>
