@@ -96,7 +96,7 @@
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, true);
 					}}
 					on:keyup={(e) => {
-						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name);
+						channel.stop({note:getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name});
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
 					class:black={note.name.includes("#")}

@@ -57,7 +57,6 @@
 		<option value="7">7</option>
 	</select>
 </div>
-{mouseDown}
 <div id="keyboard" class="!m-px">
 	{#key octave}
 		{#each getMidiNotes() as note, i}
@@ -81,7 +80,7 @@
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, true);
 					}}
 					on:keyup={(e) => {
-						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name);
+						channel.stop({note:getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name});
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
 					class:black={note.name.includes("#")}

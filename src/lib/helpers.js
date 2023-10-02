@@ -9,7 +9,7 @@ export function handleTouchStart({ channel, note, e }) {
 }
 
 export function handleTouchEnd({ channel, note }) {
-	channel.stop(note.name);
+  channel.stop({ note: note.name });
 	let touching = false;
 	let keyIsDown = false;
 	return [touching, keyIsDown];
@@ -39,7 +39,7 @@ export function handleMouseDown({ touching, channel, note, e, velocity }) {
 
 export function handleMouseUp({ touching, channel, note }) {
 	if (touching) return;
-	channel.stop(note.name);
+  channel.stop({ note: note.name });
 	let mouseDown = false;
 	let keyIsDown = false;
 	return [mouseDown, keyIsDown];
