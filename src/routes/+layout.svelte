@@ -22,7 +22,7 @@
 		<a href="/piano" class="btn-primary">Piano</a>
 		<a href="/electricpiano" class="btn-primary">Electric piano</a>
 		<a href="/drums" class="btn-primary">Drums</a> -->
-		<div class="absolute top-[50vw] flex flex-col gap-24 md:flex-row md:gap-40">
+		<div class="absolute top-[50vw] flex flex-col gap-24 md:relative md:top-0 md:flex-row md:gap-40">
 			{#each Object.entries(routes) as [url, name]}
 				<a href={url} class="group relative">
 					<span class="relative">
