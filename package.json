@@ -46,6 +46,7 @@
 		"unocss": "^0.53.6",
 		"unocss-preset-theme": "^0.7.0",
 		"vite": "latest",
+		"vite-plugin-mkcert": "^1.16.0",
 		"webmidi": "^3.1.6"
 	},
 	"type": "module"
