@@ -1,5 +1,5 @@
 <script>
-	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchStart } from "$lib/helpers";
+	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
 	import { Soundfont, getSoundfontNames } from "smplr";
@@ -39,6 +39,8 @@
 	let velocity;
 	let instrument = "marimba";
 	let displayInstrument = instrument;
+	let lastKey;
+	let currentKey;
 	let instrumentValue = getSoundfontNames()[instrument];
 	const context = new AudioContext();
 	$: channel = new Soundfont(context, {
@@ -48,9 +50,9 @@
 	});
 </script>
 
-<p class="absolute left-0 right-0 w-min dark:text-white">{displayInstrument}</p>
+<p class="absolute left-[50vw] top-8 w-min text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
 <div class="flex">
-	<select class="mr-2 px-2" bind:value={octave} name="" id="">
+	<select class="mr-2 mt-4 px-2" bind:value={octave} name="" id="">
 		<option value="1">1</option>
 		<option value="2">2</option>
 		<option value="3">3</option>
@@ -63,7 +65,7 @@
 		type="range"
 		name=""
 		id=""
-		class="w-[calc(100vw-100px)]"
+		class="mt-4 w-[calc(100vw-100px)]"
 		min="0"
 		max="127"
 		bind:value={instrumentValue}
@@ -73,13 +75,15 @@
 			console.log(instrument);
 		}} />
 </div>
-<div id="keyboard" class="!m-px">
+<div id="keyboard" class="!m-px portrait:hidden">
 	{#key octave}
 		{#each getMidiNotes() as note, i}
 			{#if i >= minimumNoteValue && i <= maximumNoteValue}
+				<!-- TODO fix touch move event, need support for multiple touch and move somehow + fix displayed note -->
+				<!-- on:touchmove={(e) => ([keyDown[currentKey], lastKey] = handleTouchMove({ touching, velocity, mouseDown, channel, note, e, lastKey }))} -->
 				<button
 					id={note.name}
-					on:touchstart={(e) => ([touching, keyDown[note.name]] = handleTouchStart({ channel, note, e }))}
+					on:touchstart={(e) => ([touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e }))}
 					on:touchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
 					on:mousedown={(e) => ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ touching, channel, note, e, velocity }))}
 					on:mouseup={() => ([mouseDown, keyDown[note.name]] = handleMouseUp({ touching, channel, note }))}
@@ -115,25 +119,23 @@
 						<span class="pointer-events-none relative left-0 top-0 top-1 block h-64 w-12">
 							<span class="bg-primary-800/20 dark:bg-primary-950 absolute bottom-1 left-0 h-3 w-full rounded-md rounded-t-none" />
 							{#if keyDown[note.name] && !document.documentElement.classList.contains("dark")}
-              <!-- ??? -->
+								<!-- ??? -->
 								<span class="neon-drop-shadow absolute -top-0 h-px" />
 								<span class="neon-drop-shadow2 absolute -bottom-1 h-px" />
-                {:else if keyDown[note.name] && document.documentElement.classList.contains("dark")}
+							{:else if keyDown[note.name] && document.documentElement.classList.contains("dark")}
 								<span class="neon-drop-shadow-dark absolute -top-0 h-px" />
 								<span class="neon-drop-shadow2-dark absolute -bottom-1 h-px" />
-                  
 							{/if}
 						</span>
 					{:else}
 						<span class="pointer-events-none relative left-0 top-0 top-1 block h-40 w-7">
-              {#if keyDown[note.name] && !document.documentElement.classList.contains("dark")}
-              <!-- ??? -->
+							{#if keyDown[note.name] && !document.documentElement.classList.contains("dark")}
+								<!-- ??? -->
 								<span class="neon-drop-shadow absolute -top-0 h-px" />
 								<span class="neon-drop-shadow2 absolute -bottom-1 h-px" />
-                {:else if keyDown[note.name] && document.documentElement.classList.contains("dark")}
+							{:else if keyDown[note.name] && document.documentElement.classList.contains("dark")}
 								<span class="neon-drop-shadow-dark absolute -top-0 h-px" />
 								<span class="neon-drop-shadow2-dark absolute -bottom-1 h-px" />
-                  
 							{/if}
 						</span>
 					{/if}
@@ -156,7 +158,7 @@
 	}
 
 	/* TODO turn into unocss shortcuts with regex */
-  /* TODO make it look good */
+	/* TODO make it look good */
 	.neon-drop-shadow {
 		box-shadow: 0 0 50px 20px rgb(var(--un-preset-theme-colors-primary-300)); /* Neon green color with a large spread radius */
 	}
