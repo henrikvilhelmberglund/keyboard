@@ -41,7 +41,10 @@
 	let displayInstrument = instrument;
 	let instrumentValue = getSoundfontNames()[instrument];
 	const context = new AudioContext();
-	$: channel = new Soundfont(context, { instrument });
+	$: channel = new Soundfont(context, {
+		instrument,
+		// loadLoopData: true
+	});
 </script>
 
 <p class="absolute left-0 right-0 w-min dark:text-white">{displayInstrument}</p>
@@ -124,9 +127,23 @@
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
 					class:black={note.name.includes("#")}
+					class:!outline-primary-700={keyDown[note.name]}
+					class:!dark:outline-primary-950={keyDown[note.name]}
+					class:!outline-1={keyDown[note.name]}
+					class:!from-primary-400={keyDown[note.name]}
+					class:!dark:to-primary-900={keyDown[note.name]}
+					class:!dark:from-primary-400={keyDown[note.name]}
+					class:!to-primary-100={keyDown[note.name]}
 					class:!bg-primary-300={keyDown[note.name]}
-					class:fancy-shadow={keyDown[note.name]}
-					class="dark:bg-primary-900 h-64 w-12 rounded border-0 border-black bg-white shadow-sm shadow-black" />
+					class:!dark:bg-primary-600={keyDown[note.name]}
+					class="dark:bg-primary-900 dark:outline-primary-500/40 outline-primary-950/40 outline-solid shadow-primary-600/30 z-10 mx-0 h-64 w-12 rounded-md rounded-t-none bg-white bg-gradient-to-b shadow-md outline-1">
+					{#if !note.name.includes("#")}
+						<span class="z-1 pointer-events-none relative left-0 top-0 top-1 block h-64 w-12">
+							<span
+								class="bg-primary-800/20 dark:bg-primary-950 absolute bottom-1 left-0 h-3 w-full rounded-md rounded-t-none" />
+						</span>
+					{/if}
+				</button>
 			{/if}
 		{/each}
 	{/key}
@@ -134,7 +151,7 @@
 
 <style>
 	.black {
-		@apply absolute h-40 w-8 -translate-x-4 bg-black shadow-none;
+		@apply absolute h-40 w-7 -translate-x-4 bg-black shadow-none outline-0;
 	}
 	#keyboard button {
 		-webkit-tap-highlight-color: transparent;
