@@ -75,9 +75,11 @@
 						piano.stop(note.name);
 						setKeyDown(note.name, false);
 					}}
-					on:mousedown={() => {
+					on:mousedown={(e) => {
 						if (touching) return;
-						piano.start(note.name);
+						console.log(e);
+            // TODO add velocity variable from mouse position (low = high velocity) and use it in mousedown and mouseenter
+						piano.start({ note: note.name, velocity: 80 });
 						mouseDown = true;
 						setKeyDown(note.name, true);
 					}}

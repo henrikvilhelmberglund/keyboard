@@ -18,27 +18,8 @@
 	let currentInstrument = "keyboard";
 </script>
 
-<main
-	class="dark:bg-primary-950 bg-primary-100 min-w-screen flex min-h-screen flex-col items-center [&>*]:m-4">
-	<header>
-		<ThemeSwitcher />
-		<DarkModeToggle />
-		<button on:click={() => (currentInstrument = "keyboard")} class="btn-primary">Keyboard</button>
-		<button on:click={() => (currentInstrument = "piano")} class="btn-primary">Piano</button>
-		<button on:click={() => (currentInstrument = "electricpiano")} class="btn-primary">Electric piano</button>
-		<button on:click={() => (currentInstrument = "drums")} class="btn-secondary">Drums</button>
-	</header>
 
-	{#if currentInstrument === "keyboard"}
-		<Keyboard />
-	{:else if currentInstrument === "piano"}
-		<Piano />
-	{:else if currentInstrument === "electricpiano"}
-		<ElectricPiano />
-	{:else if currentInstrument === "drums"}
-		<Drums />
-	{/if}
-</main>
+<Keyboard />
 
 <Footer />
 
