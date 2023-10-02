@@ -9,6 +9,8 @@
 	import MeltAccordion from "$lib/melt-examples/MeltAccordion.svelte";
 	import Keyboard from "./Keyboard.svelte";
 	import Drums from "./Drums.svelte";
+	import Piano from "./Piano.svelte";
+	import ElectricPiano from "./ElectricPiano.svelte";
 
 	// let color = "blue";
 	// $: if (browser) color = localStorage.color;
@@ -22,11 +24,17 @@
 		<ThemeSwitcher />
 		<DarkModeToggle />
 		<button on:click={() => (currentInstrument = "keyboard")} class="btn-primary">Keyboard</button>
+		<button on:click={() => (currentInstrument = "piano")} class="btn-primary">Piano</button>
+		<button on:click={() => (currentInstrument = "electricpiano")} class="btn-primary">Electric piano</button>
 		<button on:click={() => (currentInstrument = "drums")} class="btn-secondary">Drums</button>
 	</header>
 
 	{#if currentInstrument === "keyboard"}
 		<Keyboard />
+	{:else if currentInstrument === "piano"}
+		<Piano />
+	{:else if currentInstrument === "electricpiano"}
+		<ElectricPiano />
 	{:else if currentInstrument === "drums"}
 		<Drums />
 	{/if}
