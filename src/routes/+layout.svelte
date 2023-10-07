@@ -9,6 +9,7 @@
 		"/piano": "Piano",
 		"/mellotron": "Mellotron",
 		"/electricpiano": "Electric Piano",
+		"/soundfont-drums": "Soundfont Drums",
 		"/drums": "Drums",
 	};
 
