@@ -29,6 +29,13 @@ export function handleTouchEnd({ channel, note }) {
 	return [touching, keyIsDown];
 }
 
+export function handleTouchEndDrums({ channel, note }) {
+	// channel.stop(note.value);
+	let touching = false;
+	let keyIsDown = false;
+	return [touching, keyIsDown];
+}
+
 export function handleMouseDown({ touching, channel, note, e, velocity }) {
 	if (touching) return;
 	console.log(e);
@@ -43,6 +50,14 @@ export function handleMouseDown({ touching, channel, note, e, velocity }) {
 export function handleMouseUp({ touching, channel, note }) {
 	if (touching) return;
 	channel.stop(note.value);
+	let mouseDown = false;
+	let keyIsDown = false;
+	return [mouseDown, keyIsDown];
+}
+
+export function handleMouseUpDrums({ touching, channel, note }) {
+	if (touching) return;
+	// channel.stop(note.value);
 	let mouseDown = false;
 	let keyIsDown = false;
 	return [mouseDown, keyIsDown];
@@ -80,6 +95,13 @@ export function handleMouseEnter({ touching, mouseDown, channel, note, e, veloci
 export function handleMouseLeave({ touching, channel, note }) {
 	if (touching) return;
 	channel.stop(note.value);
+	let keyIsDown = false;
+	return [keyIsDown];
+}
+
+export function handleMouseLeaveDrums({ touching, channel, note }) {
+	if (touching) return;
+	// channel.stop(note.value);
 	let keyIsDown = false;
 	return [keyIsDown];
 }
