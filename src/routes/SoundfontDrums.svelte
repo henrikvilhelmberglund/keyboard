@@ -1,5 +1,5 @@
 <script>
-	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
+	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseLeaveDrums, handleMouseUp, handleMouseUpDrums, handleTouchEnd, handleTouchEndDrums, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
 	import { Soundfont, getSoundfontNames } from "smplr";
@@ -85,11 +85,11 @@
 				<button
 					id={note.name}
 					on:touchstart={(e) => ([touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e }))}
-					on:touchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
+					on:touchend={() => ([touching, keyDown[note.name]] = handleTouchEndDrums({ channel, note }))}
 					on:mousedown={(e) => ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ touching, channel, note, e, velocity }))}
-					on:mouseup={() => ([mouseDown, keyDown[note.name]] = handleMouseUp({ touching, channel, note }))}
+					on:mouseup={() => ([mouseDown, keyDown[note.name]] = handleMouseUpDrums({ touching, channel, note }))}
 					on:mouseenter={(e) => ([keyDown[note.name]] = handleMouseEnter({ touching, velocity, mouseDown, channel, note, e }))}
-					on:mouseleave={() => ([keyDown[note.name]] = handleMouseLeave({ touching, mouseDown, channel, note }))}
+					on:mouseleave={() => ([keyDown[note.name]] = handleMouseLeaveDrums({ touching, mouseDown, channel, note }))}
 					on:keydown={(e) => {
 						console.log(e);
 						// TODO fix this nightmare
@@ -101,7 +101,7 @@
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, true);
 					}}
 					on:keyup={(e) => {
-						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value);
+						// channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value);
 						console.log("aaa");
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
