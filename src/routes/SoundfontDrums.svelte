@@ -28,7 +28,7 @@
 		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
 
-	let octave = "4";
+	let octave = "2";
 	$: minimumNoteValue = parseInt(octave) * 12;
 	$: maximumNoteValue = isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36;
 	let output;
@@ -45,7 +45,7 @@
 	const context = new AudioContext();
 	const channel = new Soundfont(context, {
     instrumentUrl:
-    "https://henrikvilhelmberglund.com/midi-js-compat-soundfonts/GM-soundfonts/FluidR3_GM/drumkits/Standard/mp3/sounds.js",
+    "https://henrikvilhelmberglund.com/midi-js-compat-soundfonts/GM-soundfonts/FluidR3_GM/drumkits/Standard-mp3.js",
 		volume: 80,
 		// loadLoopData: true
 	});
@@ -62,19 +62,6 @@
 		<option value="6">6</option>
 		<option value="7">7</option>
 	</select>
-	<input
-		type="range"
-		name=""
-		id=""
-		class="mt-4 w-[calc(100vw-100px)]"
-		min="0"
-		max="127"
-		bind:value={instrumentValue}
-		on:input={() => (displayInstrument = getSoundfontNames()[instrumentValue])}
-		on:change={() => {
-			instrument = getSoundfontNames()[instrumentValue];
-			console.log(instrument);
-		}} />
 </div>
 <div id="keyboard" class="!m-px portrait:hidden">
 	{#key octave}
