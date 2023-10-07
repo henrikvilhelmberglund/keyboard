@@ -37,7 +37,7 @@
 	let keyDown = {};
 	let touching = false;
 	let velocity;
-	let instrument = "marimba";
+	let instrument = "Standard";
 	let displayInstrument = instrument;
 	let lastKey;
 	let currentKey;
