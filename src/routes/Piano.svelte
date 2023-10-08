@@ -1,7 +1,7 @@
 <script>
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
-	import { SplendidGrandPiano, CacheStorage } from "smplr";
+	import { SplendidGrandPiano } from "smplr";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
 	import { afterUpdate } from "svelte";
 
@@ -41,8 +41,9 @@
 	// let displayInstrument = instrument;
 	// let instrumentValue = getSoundfontNames()[instrument];
 	
-	const storage = new CacheStorage();
-	const channel = new SplendidGrandPiano(new AudioContext(), { storage, volume: 70 });
+  // ! removed because https makes Vite start servers on same port
+	// const storage = new CacheStorage();
+	const channel = new SplendidGrandPiano(new AudioContext(), { volume: 70 });
 </script>
 
 <p class="absolute left-0 right-0 w-min dark:text-white">Piano</p>
