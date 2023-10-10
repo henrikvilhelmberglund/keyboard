@@ -29,7 +29,7 @@
 	}
 </script>
 
-<button on:click={() => toggle()} class="text-2xl mx-4 p-4 i-carbon-sun dark:text-white dark:i-carbon-moon" />
+<button on:click={() => toggle()} aria-label="dark mode toggle" class="i-carbon-sun dark:i-carbon-moon mx-4 p-4 text-2xl dark:text-white" />
 
 <style>
 </style>
