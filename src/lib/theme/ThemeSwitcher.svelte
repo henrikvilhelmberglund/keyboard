@@ -18,6 +18,7 @@
 {#each themeColors as themeColor}
 	<button
 		on:click={() => (selectedTheme = themeColor)}
+    aria-label="theme-{themeColor}"
 		class="mx-2 h-10 w-16 rounded p-2 text-transparent bg-{themeColor}-500" />
 {/each}
 

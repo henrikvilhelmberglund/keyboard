@@ -16,6 +16,11 @@
 	$: currentRoute = $page.route.id;
 </script>
 
+<svelte:head>
+	<title>Keyboard - a playable keyboard</title>
+	<meta name="description" content="This site contains a playable keyboard with several instruments, including general midi patches, piano and drums." />
+</svelte:head>
+
 <main class="dark:bg-primary-950 bg-primary-100 min-w-screen flex min-h-screen flex-col items-center [&>*]:m-4">
 	<header class="flex lg:flex landscape:hidden">
 		<ThemeSwitcher />

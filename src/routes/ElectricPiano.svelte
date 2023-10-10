@@ -52,7 +52,7 @@
 
 <p class="absolute left-0 right-0 w-min dark:text-white">Piano</p>
 <div class="flex">
-	<select class="mr-2 px-2" bind:value={octave} name="" id="">
+	<select class="mr-2 px-2" aria-label="octave picker select" bind:value={octave} name="" id="">
 		<option value="1">1</option>
 		<option value="2">2</option>
 		<option value="3">3</option>

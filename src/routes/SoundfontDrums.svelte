@@ -53,7 +53,7 @@
 
 <p class="absolute left-[50vw] top-8 w-min text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
 <div class="flex">
-	<select class="mr-2 mt-4 px-2" bind:value={octave} name="" id="">
+	<select class="mr-2 mt-4 px-2" aria-label="octave picker select" bind:value={octave} name="" id="">
 		<option value="1">1</option>
 		<option value="2">2</option>
 		<option value="3">3</option>
