@@ -18,11 +18,9 @@
 	let currentInstrument = "keyboard";
 </script>
 
-
 <Keyboard />
 
-<!-- TODO hide this in a better way -->
-<!-- <Footer /> -->
+<Footer />
 
 <style>
 </style>
