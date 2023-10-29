@@ -5,12 +5,7 @@
 		{
 			"src": "pwa/splash.png",
 			"sizes": "512x512",
-			"type": "image/png"
-		},
-		{
-			"src": "pwa/icon/192.webp",
-			"sizes": "192x192",
-			"type": "image/webp",
+			"type": "image/png",
 			"purpose": "any maskable"
 		}
 	],
