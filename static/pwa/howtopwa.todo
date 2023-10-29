@@ -1,0 +1,30 @@
+☐ Add manifest.json in static folder with required info: 
+/*
+"name": "Keyboard",
+"start_url": "/",
+"icons": [
+  {
+    "src": "pwa/splash.png",
+    "sizes": "512x512",
+    "type": "image/png"
+  },
+  {
+    "src": "pwa/icon/192.webp",
+    "sizes": "192x192",
+    "type": "image/webp",
+    "purpose": "any maskable"
+  }
+],
+"background_color": "#3367DS",
+"display": "fullscreen",
+"theme_color": "#3367D6",
+"prefer_related_applications": false,
+"description": "A simple keyboard for playing music"
+*/
+☐ Add manifest link in HTML with <link rel="manifest" href="manifest.json" />
+☐ Add icons: 512x512 .png splash and 192x192 icon
+☐ Make 192x192 icon maskable with "purpose": "any maskable" 
+☐ Add service worker (see service-worker.ts)
+☐ Set theme color for the address bar with <meta name="theme-color" content="#3367D6"/>
+
+
