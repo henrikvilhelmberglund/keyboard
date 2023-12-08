@@ -24,9 +24,7 @@
 	}
 
 	function isMobileDevice() {
-		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-			navigator.userAgent
-		);
+		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
 
 	let octave = "4";
@@ -40,6 +38,7 @@
 	let instrument = "TR-808";
 	let displayInstrument = instrument;
 	let instrumentValue = getDrumMachineNames()[instrument];
+	console.log(instrumentValue);
 	const context = new AudioContext();
 	$: channel = new DrumMachine(context, { instrument });
 </script>
@@ -77,43 +76,42 @@
 				id={note}
 				on:touchstart={() => {
 					touching = true;
-					channel.start(note);
+					channel.start({ note: note });
 					setKeyDown(note, true);
 				}}
 				on:touchend={() => {
 					// touching = false;
-					// channel.stop(note.name);
+					// channel.stop({ note: note });
 					setKeyDown(note, false);
 				}}
 				on:mousedown={() => {
 					if (touching) return;
-					channel.start(note);
+					channel.start({ note: note });
 					mouseDown = true;
 					setKeyDown(note, true);
 				}}
 				on:mouseup={() => {
 					if (touching) return;
-					channel.stop(note);
+					channel.stop({ note: note });
 					mouseDown = false;
 					setKeyDown(note, false);
 				}}
 				on:mouseenter={() => {
 					if (touching) return;
 					if (mouseDown) {
-						channel.start(note);
+						channel.start({ note: note });
 						setKeyDown(note, true);
 					}
 				}}
 				on:mouseleave={() => {
 					if (touching) return;
-					channel.stop(note);
+					channel.stop({ note: note });
 					setKeyDown(note, false);
 				}}
 				on:keydown={(e) => {
 					// console.log(e);
 					// TODO fix this nightmare
-					if (!keyDown[getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name])
-						channel.start(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name);
+					if (!keyDown[getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name]) channel.start(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name);
 					setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, true);
 				}}
 				on:keyup={(e) => {
@@ -121,8 +119,7 @@
 					setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, false);
 				}}
 				class:!bg-primary-300={keyDown[note.name]}
-				class="border-1 dark:bg-primary-900 h-24 w-24 rounded border-black bg-white text-xs"
-				>{note}</button>
+				class="border-1 dark:bg-primary-900 h-24 w-24 rounded border-black bg-white text-xs">{note}</button>
 			<!-- {/if} -->
 		{/each}
 	{/key}
