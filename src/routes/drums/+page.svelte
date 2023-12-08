@@ -4,7 +4,9 @@
   
 </script>
 
-<Drums />
+<div class="top-[100vh] md:static relative">
+  <Drums />
+</div>
 
 <style>
   
