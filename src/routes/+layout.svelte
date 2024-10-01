@@ -3,6 +3,8 @@
 	import DarkModeToggle from "$lib/theme/DarkModeToggle.svelte";
 	import ThemeSwitcher from "$lib/theme/ThemeSwitcher.svelte";
 	import "@unocss/reset/tailwind.css";
+	/** @type {{children?: import('svelte').Snippet}} */
+	let { children } = $props();
 
 	let routes = {
 		"/keyboard": "Keyboard",
@@ -13,7 +15,7 @@
 		"/drums": "Drums",
 	};
 
-	$: currentRoute = $page.route.id;
+	let currentRoute = $derived($page.route.id);
 </script>
 
 <svelte:head>
@@ -47,7 +49,7 @@
 		</div>
 	</header>
 
-	<slot />
+	{@render children?.()}
 </main>
 
 <style></style>

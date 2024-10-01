@@ -3,7 +3,6 @@
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
 	import { Soundfont, getSoundfontNames } from "smplr";
-	import { afterUpdate } from "svelte";
 
 	// WebMidi.enable()
 	// 	.then(() => {
@@ -15,9 +14,10 @@
 	// 	})
 	// 	.catch((err) => alert(err));
 
-	afterUpdate(() => {
-		if (!isMobileDevice()) return;
-		document.getElementById(getMidiNotes()[minimumNoteValue].name).focus();
+	$effect(() => {
+    queueMicrotask(()=> {
+      document.getElementById(getMidiNotes()[minimumNoteValue].name).focus();
+    })
 	});
 
 	function setKeyDown(key, bool) {
@@ -28,26 +28,27 @@
 		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
 
-	let octave = "4";
-	$: minimumNoteValue = parseInt(octave) * 12;
-	$: maximumNoteValue = isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36;
+	let octave = $state("4");
+	let minimumNoteValue = $derived(parseInt(octave) * 12);
+	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36);
 	let output;
 	// let channel;
-	let mouseDown = false;
-	let keyDown = {};
-	let touching = false;
-	let velocity;
-	let instrument = "marimba";
-	let displayInstrument = instrument;
-	let lastKey;
+	let mouseDown = $state(false);
+	let keyDown = $state({});
+	let touching = $state(false);
+	let velocity = $state();
+  let startingInstrument = "marimba";
+	let instrument = $state(startingInstrument);
+	let displayInstrument = $state(startingInstrument);
+	let lastKey = $state();
 	let currentKey;
-	let instrumentValue = getSoundfontNames()[instrument];
+	let instrumentValue = $state();
 	const context = new AudioContext();
-	$: channel = new Soundfont(context, {
+	let channel = $derived(new Soundfont(context, {
 		instrument,
 		volume: 80,
 		// loadLoopData: true
-	});
+	}));
 </script>
 
 <p class="absolute left-[50vw] top-8 w-min text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
@@ -70,8 +71,8 @@
 		min="0"
 		max="127"
 		bind:value={instrumentValue}
-		on:input={() => (displayInstrument = getSoundfontNames()[instrumentValue])}
-		on:change={() => {
+		oninput={() => (displayInstrument = getSoundfontNames()[instrumentValue])}
+		onchange={() => {
 			instrument = getSoundfontNames()[instrumentValue];
 			console.log(instrument);
 		}} />
@@ -84,13 +85,13 @@
 				<!-- on:touchmove={(e) => ([keyDown[currentKey], lastKey] = handleTouchMove({ touching, velocity, mouseDown, channel, note, e, lastKey }))} -->
 				<button
 					id={note.name}
-					on:touchstart={(e) => ([touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e }))}
-					on:touchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
-					on:mousedown={(e) => ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ touching, channel, note, e, velocity }))}
-					on:mouseup={() => ([mouseDown, keyDown[note.name]] = handleMouseUp({ touching, channel, note }))}
-					on:mouseenter={(e) => ([keyDown[note.name]] = handleMouseEnter({ touching, velocity, mouseDown, channel, note, e }))}
-					on:mouseleave={() => ([keyDown[note.name]] = handleMouseLeave({ touching, mouseDown, channel, note }))}
-					on:keydown={(e) => {
+					ontouchstart={(e) => ([touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e }))}
+					ontouchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
+					onmousedown={(e) => ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ touching, channel, note, e, velocity }))}
+					onmouseup={() => ([mouseDown, keyDown[note.name]] = handleMouseUp({ touching, channel, note }))}
+					onmouseenter={(e) => ([keyDown[note.name]] = handleMouseEnter({ touching, velocity, mouseDown, channel, note, e }))}
+					onmouseleave={() => ([keyDown[note.name]] = handleMouseLeave({ touching, mouseDown, channel, note }))}
+					onkeydown={(e) => {
 						console.log(e);
 						// TODO fix this nightmare
 						if (!keyDown[getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name])
@@ -100,7 +101,7 @@
 							});
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, true);
 					}}
-					on:keyup={(e) => {
+					onkeyup={(e) => {
 						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value);
 						console.log("aaa");
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
@@ -118,25 +119,25 @@
 					class="dark:bg-primary-900 dark:outline-primary-500/40 z-100 outline-primary-950/40 outline-solid shadow-primary-600/30 z-10 mx-0 h-64 w-12 rounded-md rounded-t-none bg-white bg-gradient-to-b shadow-md outline-1">
 					{#if !note.name.includes("#")}
 						<span class="pointer-events-none relative left-0 top-0 top-1 block h-64 w-12">
-							<span class="bg-primary-800/20 dark:bg-primary-950 absolute bottom-1 left-0 h-3 w-full rounded-md rounded-t-none" />
+							<span class="bg-primary-800/20 dark:bg-primary-950 absolute bottom-1 left-0 h-3 w-full rounded-md rounded-t-none"></span>
 							{#if keyDown[note.name] && !document.documentElement.classList.contains("dark")}
 								<!-- ??? -->
-								<span class="neon-drop-shadow absolute -top-0 h-px" />
-								<span class="neon-drop-shadow2 absolute -bottom-1 h-px" />
+								<span class="neon-drop-shadow absolute -top-0 h-px"></span>
+								<span class="neon-drop-shadow2 absolute -bottom-1 h-px"></span>
 							{:else if keyDown[note.name] && document.documentElement.classList.contains("dark")}
-								<span class="neon-drop-shadow-dark absolute -top-0 h-px" />
-								<span class="neon-drop-shadow2-dark absolute -bottom-1 h-px" />
+								<span class="neon-drop-shadow-dark absolute -top-0 h-px"></span>
+								<span class="neon-drop-shadow2-dark absolute -bottom-1 h-px"></span>
 							{/if}
 						</span>
 					{:else}
 						<span class="pointer-events-none relative left-0 top-0 top-1 block h-40 w-7">
 							{#if keyDown[note.name] && !document.documentElement.classList.contains("dark")}
 								<!-- ??? -->
-								<span class="neon-drop-shadow absolute -top-0 h-px" />
-								<span class="neon-drop-shadow2 absolute -bottom-1 h-px" />
+								<span class="neon-drop-shadow absolute -top-0 h-px"></span>
+								<span class="neon-drop-shadow2 absolute -bottom-1 h-px"></span>
 							{:else if keyDown[note.name] && document.documentElement.classList.contains("dark")}
-								<span class="neon-drop-shadow-dark absolute -top-0 h-px" />
-								<span class="neon-drop-shadow2-dark absolute -bottom-1 h-px" />
+								<span class="neon-drop-shadow-dark absolute -top-0 h-px"></span>
+								<span class="neon-drop-shadow2-dark absolute -bottom-1 h-px"></span>
 							{/if}
 						</span>
 					{/if}

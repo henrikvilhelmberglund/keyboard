@@ -2,7 +2,6 @@
 	import { drumSamples, getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
 	import { DrumMachine, getDrumMachineNames } from "smplr";
-	import { afterUpdate } from "svelte";
 
 	// WebMidi.enable()
 	// 	.then(() => {
@@ -14,9 +13,10 @@
 	// 	})
 	// 	.catch((err) => alert(err));
 
-	afterUpdate(() => {
-		if (!isMobileDevice()) return;
+	$effect(() => {
+    queueMicrotask(()=> {
 		document.getElementById(getMidiNotes()[lowerLimit].name).focus();
+    })
 	});
 
 	function setKeyDown(key, bool) {
@@ -27,20 +27,20 @@
 		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
 
-	let octave = "4";
-	$: lowerLimit = parseInt(octave) * 12;
-	$: upperLimit = isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36;
+	let octave = $state("4");
+	let lowerLimit = $derived(parseInt(octave) * 12);
+	let upperLimit = $derived(isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36);
 	let output;
 	// let channel;
-	let mouseDown = false;
-	let keyDown = {};
-	let touching = false;
-	let instrument = "TR-808";
-	let displayInstrument = instrument;
-	let instrumentValue = getDrumMachineNames()[instrument];
+	let mouseDown = $state(false);
+	let keyDown = $state({});
+	let touching = $state(false);
+	let instrument = $state("TR-808");
+	let displayInstrument = $state(instrument);
+	let instrumentValue = $state(getDrumMachineNames()[instrument]);
 	console.log(instrumentValue);
 	const context = new AudioContext();
-	$: channel = new DrumMachine(context, { instrument });
+	let channel = $derived(new DrumMachine(context, { instrument }));
 </script>
 
 <p class="absolute left-0 right-0 w-min dark:text-white">{displayInstrument}</p>
@@ -62,8 +62,8 @@
 		min="0"
 		max="127"
 		bind:value={instrumentValue}
-		on:input={() => (displayInstrument = getDrumMachineNames()[instrumentValue])}
-		on:change={() => {
+		oninput={() => (displayInstrument = getDrumMachineNames()[instrumentValue])}
+		onchange={() => {
 			instrument = getDrumMachineNames()[instrumentValue];
 			console.log(instrument);
 		}} />
@@ -74,47 +74,47 @@
 			<!-- {#if i >= lowerLimit && i <= upperLimit} -->
 			<button
 				id={note}
-				on:touchstart={() => {
+				ontouchstart={() => {
 					touching = true;
 					channel.start({ note: note });
 					setKeyDown(note, true);
 				}}
-				on:touchend={() => {
+				ontouchend={() => {
 					// touching = false;
 					// channel.stop({ note: note });
 					setKeyDown(note, false);
 				}}
-				on:mousedown={() => {
+				onmousedown={() => {
 					if (touching) return;
 					channel.start({ note: note });
 					mouseDown = true;
 					setKeyDown(note, true);
 				}}
-				on:mouseup={() => {
+				onmouseup={() => {
 					if (touching) return;
 					channel.stop({ note: note });
 					mouseDown = false;
 					setKeyDown(note, false);
 				}}
-				on:mouseenter={() => {
+				onmouseenter={() => {
 					if (touching) return;
 					if (mouseDown) {
 						channel.start({ note: note });
 						setKeyDown(note, true);
 					}
 				}}
-				on:mouseleave={() => {
+				onmouseleave={() => {
 					if (touching) return;
 					channel.stop({ note: note });
 					setKeyDown(note, false);
 				}}
-				on:keydown={(e) => {
+				onkeydown={(e) => {
 					// console.log(e);
 					// TODO fix this nightmare
 					if (!keyDown[getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name]) channel.start(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name);
 					setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, true);
 				}}
-				on:keyup={(e) => {
+				onkeyup={(e) => {
 					channel.stop(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name);
 					setKeyDown(getMidiNotes()[lowerLimit + keyboardNotes[e.code]].name, false);
 				}}
