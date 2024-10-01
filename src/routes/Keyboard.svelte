@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
@@ -42,7 +42,7 @@
 	let displayInstrument = $state(startingInstrument);
 	let lastKey = $state();
 	let currentKey;
-	let instrumentValue = $state();
+	let instrumentValue = $state(0);
 	const context = new AudioContext();
 	let channel = $derived(new Soundfont(context, {
 		instrument,
