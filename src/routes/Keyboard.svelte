@@ -107,6 +107,11 @@
 						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
 					}}
 					class:black={note.name.includes("#")}
+          class:black-csharp={note.name.includes("C#")}
+          class:black-dsharp={note.name.includes("D#")}
+          class:black-fsharp={note.name.includes("F#")}
+          class:black-gsharp={note.name.includes("G#")}
+          class:black-asharp={note.name.includes("A#")}
 					class:!outline-primary-700={keyDown[note.name]}
 					class:!dark:outline-primary-950={keyDown[note.name]}
 					class:!outline-1={keyDown[note.name]}
@@ -148,8 +153,20 @@
 </div>
 
 <style>
-	.black {
+	.black-csharp {
+		@apply absolute h-40 w-7 -translate-x-5 bg-black shadow-none outline-0;
+	}
+  .black-dsharp {
+		@apply absolute h-40 w-7 -translate-x-3 bg-black shadow-none outline-0;
+	}
+  .black-fsharp {
+		@apply absolute h-40 w-7 -translate-x-5 bg-black shadow-none outline-0;
+	}
+  .black-gsharp {
 		@apply absolute h-40 w-7 -translate-x-4 bg-black shadow-none outline-0;
+	}
+  .black-asharp {
+		@apply absolute h-40 w-7 -translate-x-3 bg-black shadow-none outline-0;
 	}
 	#keyboard button {
 		-webkit-tap-highlight-color: transparent;
