@@ -151,19 +151,19 @@
 
 <style>
 	.black-csharp {
-		@apply absolute h-40 w-7 -translate-x-5 bg-black shadow-none outline-0;
+		@apply absolute h-40 w-7 -translate-x-[1.25rem] bg-black shadow-none outline-0;
 	}
 	.black-dsharp {
-		@apply absolute h-40 w-7 -translate-x-3 bg-black shadow-none outline-0;
+		@apply absolute h-40 w-7 -translate-x-[0.55rem] bg-black shadow-none outline-0;
 	}
 	.black-fsharp {
-		@apply absolute h-40 w-7 -translate-x-5 bg-black shadow-none outline-0;
+		@apply absolute h-40 w-7 -translate-x-[1.25rem] bg-black shadow-none outline-0;
 	}
 	.black-gsharp {
-		@apply absolute h-40 w-7 -translate-x-4 bg-black shadow-none outline-0;
+		@apply absolute h-40 w-7 -translate-x-[0.9rem] bg-black shadow-none outline-0;
 	}
 	.black-asharp {
-		@apply absolute h-40 w-7 -translate-x-3 bg-black shadow-none outline-0;
+		@apply absolute h-40 w-7 -translate-x-[0.55rem] bg-black shadow-none outline-0;
 	}
 	#keyboard button {
 		-webkit-tap-highlight-color: transparent;
