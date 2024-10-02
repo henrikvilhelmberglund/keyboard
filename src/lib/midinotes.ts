@@ -16,7 +16,7 @@ export function getMidiNotes() {
 	return midiNotes;
 }
 
-export const noteValueOffset = {
+export const noteValueOffset: Record<string, number> = {
 	// row1
 	KeyZ: 0,
 	KeyS: 1,
