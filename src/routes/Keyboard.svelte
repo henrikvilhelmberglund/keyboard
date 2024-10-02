@@ -31,7 +31,7 @@
 	let instrument = $state(startingInstrument);
 	let displayInstrument = $state(startingInstrument);
 	let lastKey = $state();
-	let instrumentValue = $state(0);
+	let instrumentValue = $state(getSoundfontNames().indexOf(startingInstrument));
 	const context = new AudioContext();
 	let channel = $derived(
 		new Soundfont(context, {
