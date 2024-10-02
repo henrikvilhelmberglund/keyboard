@@ -22,7 +22,7 @@
 
 	let octave = $state("4");
 	let minimumNoteValue = $derived(parseInt(octave) * 12);
-	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36);
+	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 48);
 	let mouseDown = $state(false);
 	let keyDown: { [key: string]: boolean } = $state({});
 	let touching = $state(false);
@@ -84,7 +84,9 @@
 					onmouseleave={() => (!touching ? ([keyDown[note.name]] = handleMouseLeave({ channel, note })) : null)}
 					onkeydown={(e) => {
 						console.log(e);
-						const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
+            // TODO add support for raising/lowering octave with shift and ctrl
+            if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
+            const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
 						const pressedKeyValue = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value;
 						if (!keyDown[pressedKeyName])
 							channel.start({
@@ -94,6 +96,7 @@
 						setKeyDown(pressedKeyName, true);
 					}}
 					onkeyup={(e) => {
+            if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
 						const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
 						const pressedKeyValue = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value;
 						channel.stop(pressedKeyValue);
