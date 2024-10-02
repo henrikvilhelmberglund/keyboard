@@ -1,26 +1,18 @@
 <script lang="ts">
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
-	// import { WebMidi } from "../../node_modules/webmidi/dist/esm/webmidi.esm.min.js";
 	import { Soundfont, getSoundfontNames } from "smplr";
 
-	// WebMidi.enable()
-	// 	.then(() => {
-	// 		// console.log("WebMidi enabled!");
-	// 		output = WebMidi.outputs[0];
-	// 		// console.log(output);
-	// 		channel = output.channels[1];
-	// 		// channel.start("C3");
-	// 	})
-	// 	.catch((err) => alert(err));
-
 	$effect(() => {
-    queueMicrotask(()=> {
-      document.getElementById(getMidiNotes()[minimumNoteValue].name).focus();
-    })
+		queueMicrotask(() => {
+			const minimumNoteElement = document.getElementById(getMidiNotes()[minimumNoteValue].name);
+			if (minimumNoteElement) {
+				minimumNoteElement.focus();
+			}
+		});
 	});
 
-	function setKeyDown(key, bool) {
+	function setKeyDown(key: string, bool: boolean) {
 		keyDown[key] = bool;
 	}
 
@@ -31,24 +23,23 @@
 	let octave = $state("4");
 	let minimumNoteValue = $derived(parseInt(octave) * 12);
 	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 36);
-	let output;
-	// let channel;
 	let mouseDown = $state(false);
-	let keyDown = $state({});
+	let keyDown: { [key: string]: boolean } = $state({});
 	let touching = $state(false);
-	let velocity = $state();
-  let startingInstrument = "marimba";
+	let velocity = $state(80);
+	let startingInstrument = "marimba";
 	let instrument = $state(startingInstrument);
 	let displayInstrument = $state(startingInstrument);
 	let lastKey = $state();
-	let currentKey;
 	let instrumentValue = $state(0);
 	const context = new AudioContext();
-	let channel = $derived(new Soundfont(context, {
-		instrument,
-		volume: 80,
-		// loadLoopData: true
-	}));
+	let channel = $derived(
+		new Soundfont(context, {
+			instrument,
+			volume: 80,
+			// loadLoopData: true
+		})
+	);
 </script>
 
 <p class="absolute left-[50vw] top-8 w-min text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
@@ -87,31 +78,34 @@
 					id={note.name}
 					ontouchstart={(e) => ([touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e }))}
 					ontouchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
-					onmousedown={(e) => ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ touching, channel, note, e, velocity }))}
-					onmouseup={() => ([mouseDown, keyDown[note.name]] = handleMouseUp({ touching, channel, note }))}
-					onmouseenter={(e) => ([keyDown[note.name]] = handleMouseEnter({ touching, velocity, mouseDown, channel, note, e }))}
-					onmouseleave={() => ([keyDown[note.name]] = handleMouseLeave({ touching, mouseDown, channel, note }))}
+					onmousedown={(e) => (!touching ? ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ channel, note, e, velocity })) : null)}
+					onmouseup={() => (!touching ? ([mouseDown, keyDown[note.name]] = handleMouseUp({ channel, note })) : null)}
+					onmouseenter={(e) => (!touching ? ([keyDown[note.name]] = handleMouseEnter({ velocity, mouseDown, channel, note, e })) : null)}
+					onmouseleave={() => (!touching ? ([keyDown[note.name]] = handleMouseLeave({ channel, note })) : null)}
 					onkeydown={(e) => {
 						console.log(e);
-						// TODO fix this nightmare
-						if (!keyDown[getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name])
+						const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
+						const pressedKeyValue = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value;
+						if (!keyDown[pressedKeyName])
 							channel.start({
-								note: getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value,
+								note: pressedKeyValue,
 								velocity,
 							});
-						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, true);
+						setKeyDown(pressedKeyName, true);
 					}}
 					onkeyup={(e) => {
-						channel.stop(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value);
+						const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
+						const pressedKeyValue = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value;
+						channel.stop(pressedKeyValue);
 						console.log("aaa");
-						setKeyDown(getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name, false);
+						setKeyDown(pressedKeyName, false);
 					}}
 					class:black={note.name.includes("#")}
-          class:black-csharp={note.name.includes("C#")}
-          class:black-dsharp={note.name.includes("D#")}
-          class:black-fsharp={note.name.includes("F#")}
-          class:black-gsharp={note.name.includes("G#")}
-          class:black-asharp={note.name.includes("A#")}
+					class:black-csharp={note.name.includes("C#")}
+					class:black-dsharp={note.name.includes("D#")}
+					class:black-fsharp={note.name.includes("F#")}
+					class:black-gsharp={note.name.includes("G#")}
+					class:black-asharp={note.name.includes("A#")}
 					class:!outline-primary-700={keyDown[note.name]}
 					class:!dark:outline-primary-950={keyDown[note.name]}
 					class:!outline-1={keyDown[note.name]}
@@ -156,24 +150,31 @@
 	.black-csharp {
 		@apply absolute h-40 w-7 -translate-x-5 bg-black shadow-none outline-0;
 	}
-  .black-dsharp {
+	.black-dsharp {
 		@apply absolute h-40 w-7 -translate-x-3 bg-black shadow-none outline-0;
 	}
-  .black-fsharp {
+	.black-fsharp {
 		@apply absolute h-40 w-7 -translate-x-5 bg-black shadow-none outline-0;
 	}
-  .black-gsharp {
+	.black-gsharp {
 		@apply absolute h-40 w-7 -translate-x-4 bg-black shadow-none outline-0;
 	}
-  .black-asharp {
+	.black-asharp {
 		@apply absolute h-40 w-7 -translate-x-3 bg-black shadow-none outline-0;
 	}
 	#keyboard button {
 		-webkit-tap-highlight-color: transparent;
 	}
 	.fancy-shadow {
-		box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset, rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset, rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset,
-			rgba(0, 0, 0, 0.06) 0px 2px 1px, rgba(0, 0, 0, 0.09) 0px 4px 2px, rgba(0, 0, 0, 0.09) 0px 8px 4px, rgba(0, 0, 0, 0.09) 0px 16px 8px, rgba(0, 0, 0, 0.09) 0px 32px 16px;
+		box-shadow:
+			rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
+			rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
+			rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset,
+			rgba(0, 0, 0, 0.06) 0px 2px 1px,
+			rgba(0, 0, 0, 0.09) 0px 4px 2px,
+			rgba(0, 0, 0, 0.09) 0px 8px 4px,
+			rgba(0, 0, 0, 0.09) 0px 16px 8px,
+			rgba(0, 0, 0, 0.09) 0px 32px 16px;
 	}
 
 	/* TODO turn into unocss shortcuts with regex */
