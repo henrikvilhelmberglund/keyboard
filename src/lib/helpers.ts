@@ -43,7 +43,7 @@ export function handleMouseDown({ channel, note, e, velocity }: { channel: Sound
 	console.log(e);
 	velocity = getVelocity(e);
 
-	channel.start({ note: note.value, velocity });
+	channel.start({ note: note.value, velocity, loop: true });
 	let mouseDown = true;
 	let keyIsDown = true;
 	return [mouseDown, keyIsDown, velocity];
