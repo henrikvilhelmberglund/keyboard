@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
-	import { Soundfont, getSoundfontNames } from "smplr";
+	import { Soundfont, getSoundfontNames, Soundfont2Sampler  } from "smplr";
+// import { SoundFont2 } from "soundfont2";
+import { SoundFont3 } from "@menglinmaker/soundfont3";
 
 	$effect(() => {
 		queueMicrotask(() => {
@@ -19,7 +21,16 @@
 	function isMobileDevice() {
 		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
-
+  
+  let instrumentValue = $state(3);
+  const paddedInstrumentValue = $derived(instrumentValue.toString().padStart(2,"0"))
+	const context = new AudioContext();
+  const channel = $derived(new Soundfont2Sampler(context, {
+    // url: `/sf2/musyng/0${paddedInstrumentValue}.sf2`,
+    url: `/sf2/Musyng.sf2`,
+    createSoundfont: (data) => new SoundFont3(data),
+  }))
+  
 	let octave = $state("4");
 	let minimumNoteValue = $derived(parseInt(octave) * 12);
 	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 48);
@@ -27,19 +38,32 @@
 	let keyDown: { [key: string]: boolean } = $state({});
 	let touching = $state(false);
 	let velocity = $state(80);
-	let startingInstrument = "marimba";
+	let startingInstrument = channel.instrumentNames[0];
 	let instrument = $state(startingInstrument);
 	let displayInstrument = $state(startingInstrument);
 	let lastKey = $state();
-	let instrumentValue = $state(getSoundfontNames().indexOf(startingInstrument));
-	const context = new AudioContext();
-	let channel = $derived(
-		new Soundfont(context, {
-			instrument,
-			volume: 80,
-			// loadLoopData: true
-		})
-	);
+
+  
+$effect(()=> {
+
+  channel.load.then(() => {
+    // list all available instruments for the soundfont
+    console.log(channel.instrumentNames);
+    
+    // load the first available instrument
+    channel.loadInstrument(channel.instrumentNames[0]);
+    
+    
+  });
+})
+  
+	// let channel = $derived(
+	// 	new Soundfont(context, {
+	// 		instrument,
+	// 		volume: 80,
+	// 		// loadLoopData: true
+	// 	})
+	// );
 </script>
 
 <p class="absolute left-[50vw] top-8 w-min text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
@@ -62,10 +86,15 @@
 		min="0"
 		max="127"
 		bind:value={instrumentValue}
-		oninput={() => (displayInstrument = getSoundfontNames()[instrumentValue])}
+		oninput={() => (displayInstrument = channel.instrumentNames[instrumentValue])}
 		onchange={() => {
-			instrument = getSoundfontNames()[instrumentValue];
-			console.log(instrument);
+      console.log(channel.instrumentNames);
+      if (channel.instrumentNames[instrumentValue]) {
+        channel.loadInstrument(channel.instrumentNames[instrumentValue]);
+        instrument = channel.instrumentNames[instrumentValue];
+        displayInstrument = channel.instrumentNames[instrumentValue];
+      } 
+			// console.log(instrument);
 		}} />
 </div>
 <div id="keyboard" class="!m-px portrait:hidden">
@@ -84,9 +113,9 @@
 					onmouseleave={() => (!touching ? ([keyDown[note.name]] = handleMouseLeave({ channel, note })) : null)}
 					onkeydown={(e) => {
 						console.log(e);
-            // TODO add support for raising/lowering octave with shift and ctrl
-            if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
-            const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
+						// TODO add support for raising/lowering octave with shift and ctrl
+						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
+						const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
 						const pressedKeyValue = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value;
 						if (!keyDown[pressedKeyName])
 							channel.start({
@@ -96,7 +125,7 @@
 						setKeyDown(pressedKeyName, true);
 					}}
 					onkeyup={(e) => {
-            if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
+						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
 						const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
 						const pressedKeyValue = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value;
 						channel.stop(pressedKeyValue);
@@ -104,11 +133,9 @@
 						setKeyDown(pressedKeyName, false);
 					}}
 					class:black={note.name.includes("#")}
-					class:black-csharp={note.name.includes("C#")}
-					class:black-dsharp={note.name.includes("D#")}
-					class:black-fsharp={note.name.includes("F#")}
-					class:black-gsharp={note.name.includes("G#")}
-					class:black-asharp={note.name.includes("A#")}
+					class:black-left={note.name.match(/C#|F#/)}
+					class:black-right={note.name.match(/D#|A#/)}
+					class:black-middle={note.name.includes("G#")}
 					class:!outline-primary-700={keyDown[note.name]}
 					class:!dark:outline-primary-950={keyDown[note.name]}
 					class:!outline-1={keyDown[note.name]}
@@ -150,21 +177,16 @@
 </div>
 
 <style>
-	.black-csharp {
+	.black-left {
 		@apply absolute h-40 w-7 -translate-x-[1.25rem] bg-black shadow-none outline-0;
 	}
-	.black-dsharp {
+	.black-right {
 		@apply absolute h-40 w-7 -translate-x-[0.55rem] bg-black shadow-none outline-0;
 	}
-	.black-fsharp {
-		@apply absolute h-40 w-7 -translate-x-[1.25rem] bg-black shadow-none outline-0;
-	}
-	.black-gsharp {
+	.black-middle {
 		@apply absolute h-40 w-7 -translate-x-[0.9rem] bg-black shadow-none outline-0;
 	}
-	.black-asharp {
-		@apply absolute h-40 w-7 -translate-x-[0.55rem] bg-black shadow-none outline-0;
-	}
+
 	#keyboard button {
 		-webkit-tap-highlight-color: transparent;
 	}
