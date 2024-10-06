@@ -2,8 +2,7 @@
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
 	import { Soundfont, getSoundfontNames, Soundfont2Sampler  } from "smplr";
-// import { SoundFont2 } from "soundfont2";
-import { SoundFont3 } from "@menglinmaker/soundfont3";
+import { SoundFont2 } from "soundfont2";
 
 	$effect(() => {
 		queueMicrotask(() => {
@@ -22,13 +21,12 @@ import { SoundFont3 } from "@menglinmaker/soundfont3";
 		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
   
-  let instrumentValue = $state(3);
+  let instrumentValue = $state(0);
   const paddedInstrumentValue = $derived(instrumentValue.toString().padStart(2,"0"))
 	const context = new AudioContext();
   const channel = $derived(new Soundfont2Sampler(context, {
-    // url: `/sf2/musyng/0${paddedInstrumentValue}.sf2`,
-    url: `/sf2/Musyng.sf2`,
-    createSoundfont: (data) => new SoundFont3(data),
+    url: `/sf2/musyng/0${paddedInstrumentValue}.sf2`,
+    createSoundfont: (data) => new SoundFont2(data),
   }))
   
 	let octave = $state("4");
@@ -86,13 +84,13 @@ $effect(()=> {
 		min="0"
 		max="127"
 		bind:value={instrumentValue}
-		oninput={() => (displayInstrument = channel.instrumentNames[instrumentValue])}
+		oninput={() => (displayInstrument = channel.instrumentNames[0])}
 		onchange={() => {
       console.log(channel.instrumentNames);
-      if (channel.instrumentNames[instrumentValue]) {
-        channel.loadInstrument(channel.instrumentNames[instrumentValue]);
-        instrument = channel.instrumentNames[instrumentValue];
-        displayInstrument = channel.instrumentNames[instrumentValue];
+      if (channel.instrumentNames[0]) {
+        channel.loadInstrument(channel.instrumentNames[0]);
+        instrument = channel.instrumentNames[0];
+        displayInstrument = channel.instrumentNames[0];
       } 
 			// console.log(instrument);
 		}} />
