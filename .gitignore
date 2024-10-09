@@ -11,3 +11,4 @@ vite.config.ts.timestamp-*
 
 # temporary
 /static/sf2wrong
+/static/sf2
