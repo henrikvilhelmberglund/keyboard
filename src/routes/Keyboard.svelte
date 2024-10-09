@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
-	import { Soundfont, getSoundfontNames, Soundfont2Sampler  } from "smplr";
-import { SoundFont2 } from "soundfont2";
+	import { Soundfont, getSoundfontNames, Soundfont2Sampler } from "smplr";
+	import { SoundFont2 } from "soundfont2";
 
 	$effect(() => {
 		queueMicrotask(() => {
@@ -20,14 +20,8 @@ import { SoundFont2 } from "soundfont2";
 	function isMobileDevice() {
 		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 	}
-  
-  let instrumentValue = $state(0);
-  const paddedInstrumentValue = $derived(instrumentValue.toString().padStart(2,"0"))
+
 	const context = new AudioContext();
-  const channel = $derived(new Soundfont2Sampler(context, {
-    url: `/sf2/musyng/0${paddedInstrumentValue}.sf2`,
-    createSoundfont: (data) => new SoundFont2(data),
-  }))
   
 	let octave = $state("4");
 	let minimumNoteValue = $derived(parseInt(octave) * 12);
@@ -36,32 +30,43 @@ import { SoundFont2 } from "soundfont2";
 	let keyDown: { [key: string]: boolean } = $state({});
 	let touching = $state(false);
 	let velocity = $state(80);
-	let startingInstrument = channel.instrumentNames[0];
+	let startingInstrument = "marimba";
+	let instrumentValue = $state(getSoundfontNames()[startingInstrument]);
 	let instrument = $state(startingInstrument);
 	let displayInstrument = $state(startingInstrument);
 	let lastKey = $state();
 
-  
-$effect(()=> {
+	// TODO use sf2 instead later
+	// const channel = $derived(new Soundfont2Sampler(context, {
+	//   url: `/sf2/musyng/0${paddedInstrumentValue}.sf2`,
+	//   createSoundfont: (data) => new SoundFont2(data),
+	// }))
+	// $effect(()=> {
 
-  channel.load.then(() => {
-    // list all available instruments for the soundfont
-    console.log(channel.instrumentNames);
-    
-    // load the first available instrument
-    channel.loadInstrument(channel.instrumentNames[0]);
-    
-    
-  });
-})
-  
-	// let channel = $derived(
-	// 	new Soundfont(context, {
-	// 		instrument,
-	// 		volume: 80,
-	// 		// loadLoopData: true
-	// 	})
-	// );
+	//   channel.load.then(() => {
+	//     // list all available instruments for the soundfont
+	//     console.log(channel.instrumentNames);
+
+	//     // load the first available instrument
+	//     channel.loadInstrument(channel.instrumentNames[0]);
+
+	//   });
+	// })
+	// onchange={() => {
+	//   console.log(channel.instrumentNames);
+	//   if (channel.instrumentNames[0]) {
+	//     channel.loadInstrument(channel.instrumentNames[0]);
+	//     instrument = channel.instrumentNames[0];
+	//     displayInstrument = channel.instrumentNames[0];
+	//   }
+
+	let channel = $derived(
+		new Soundfont(context, {
+			instrument,
+			volume: 80,
+			// loadLoopData: true
+		})
+	);
 </script>
 
 <p class="absolute left-[50vw] top-8 w-min text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
@@ -84,14 +89,10 @@ $effect(()=> {
 		min="0"
 		max="127"
 		bind:value={instrumentValue}
-		oninput={() => (displayInstrument = channel.instrumentNames[0])}
+		oninput={() => (displayInstrument = getSoundfontNames()[instrumentValue])}
 		onchange={() => {
-      console.log(channel.instrumentNames);
-      if (channel.instrumentNames[0]) {
-        channel.loadInstrument(channel.instrumentNames[0]);
-        instrument = channel.instrumentNames[0];
-        displayInstrument = channel.instrumentNames[0];
-      } 
+			instrument = getSoundfontNames()[instrumentValue];
+			console.log(instrument);
 			// console.log(instrument);
 		}} />
 </div>
