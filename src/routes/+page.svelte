@@ -6,18 +6,18 @@
 	import ThemeSwitcher from "$lib/theme/ThemeSwitcher.svelte";
 	import { browser } from "$app/environment";
 	import { color } from "$lib/stores";
-	import Keyboard from "./Keyboard.svelte";
-	import Drums from "./Drums.svelte";
-	import Piano from "./Piano.svelte";
-	import ElectricPiano from "./ElectricPiano.svelte";
+	import Keyboard from "$lib/instruments/Keyboard.svelte";
+	import Drums from "$lib/instruments/Drums.svelte";
+	import Piano from "$lib/instruments/Piano.svelte";
+	import ElectricPiano from "$lib/instruments/ElectricPiano.svelte";
 
 	// let color = "blue";
 	// $: if (browser) color = localStorage.color;
 
-	let currentInstrument = "keyboard";
+	
 </script>
 
-<Keyboard />
+<Keyboard instrumentType="keyboard" library="smplr" />
 
 <Footer />
 
