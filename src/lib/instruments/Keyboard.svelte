@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
-	import { Soundfont, getSoundfontNames, Soundfont2Sampler } from "smplr";
+	import { Soundfont, getSoundfontNames, ElectricPiano, getElectricPianoNames } from "smplr";
 	import { SoundFont2 } from "soundfont2";
+
+	let { instrumentType, library } = $props();
 
 	$effect(() => {
 		queueMicrotask(() => {
@@ -22,7 +24,7 @@
 	}
 
 	const context = new AudioContext();
-  
+
 	let octave = $state("4");
 	let minimumNoteValue = $derived(parseInt(octave) * 12);
 	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 48);
@@ -30,10 +32,10 @@
 	let keyDown: { [key: string]: boolean } = $state({});
 	let touching = $state(false);
 	let velocity = $state(80);
-	let startingInstrument = "marimba";
-	let instrumentValue = $state(getSoundfontNames()[startingInstrument]);
-	let instrument = $state(startingInstrument);
-	let displayInstrument = $state(startingInstrument);
+	let instrumentList = initializeInstrumentList();
+	let instrument = $state(initializeStartingInstrument());
+	let instrumentValue = $state(instrumentList.indexOf(instrument));
+	let displayInstrument = $derived(instrumentList[instrumentValue]);
 	let lastKey = $state();
 
 	// TODO use sf2 instead later
@@ -59,14 +61,50 @@
 	//     instrument = channel.instrumentNames[0];
 	//     displayInstrument = channel.instrumentNames[0];
 	//   }
+	function initializeStartingInstrument() {
+		if (instrumentType === "keyboard" && library === "smplr") {
+			return "marimba";
+		}
+		if (instrumentType === "electricpiano" && library === "smplr") {
+			return "CP80";
+		}
+		return "starting instrument not initialized";
+	}
 
-	let channel = $derived(
-		new Soundfont(context, {
-			instrument,
-			volume: 80,
-			// loadLoopData: true
-		})
-	);
+	function initializeInstrumentList() {
+		if (instrumentType === "keyboard" && library === "smplr") {
+			return getSoundfontNames();
+		}
+		if (instrumentType === "electricpiano" && library === "smplr") {
+			return getElectricPianoNames();
+		}
+		return [];
+	}
+
+	// initialize instrument type
+	function initializeInstrumentType() {
+		if (instrumentType === "keyboard" && library === "smplr") {
+			return new Soundfont(context, {
+				instrument,
+				volume: 80,
+				// loadLoopData: true
+			});
+		}
+		if (instrumentType === "electricpiano" && library === "smplr") {
+			return new ElectricPiano(context, {
+				instrument: "WurlitzerEP200",
+				volume: 60,
+			});
+		} else {
+			// default
+			return new Soundfont(context, {
+				instrument,
+				volume: 80,
+				// loadLoopData: true
+			});
+		}
+	}
+	let channel = $state(initializeInstrumentType());
 </script>
 
 <p class="absolute left-[50vw] top-8 w-min text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
@@ -89,9 +127,9 @@
 		min="0"
 		max="127"
 		bind:value={instrumentValue}
-		oninput={() => (displayInstrument = getSoundfontNames()[instrumentValue])}
 		onchange={() => {
-			instrument = getSoundfontNames()[instrumentValue];
+			instrument = instrumentList[instrumentValue];
+			channel = initializeInstrumentType();
 			console.log(instrument);
 			// console.log(instrument);
 		}} />
