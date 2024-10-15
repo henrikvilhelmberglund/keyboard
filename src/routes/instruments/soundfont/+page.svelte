@@ -4,7 +4,7 @@
   
 </script>
 
-<Keyboard />
+<Keyboard instrumentType="keyboard" library="spessasynth" />
 
 <style>
   
