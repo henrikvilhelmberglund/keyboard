@@ -1,4 +1,4 @@
-import type { Soundfont } from "smplr";
+import { DrumMachine } from "smplr";
 import type { Note, ValidInstruments } from "./types";
 
 function getVelocity(e: MouseEvent) {
@@ -26,8 +26,9 @@ export function handleTouchStart({ channel, note, e }: { channel: ValidInstrumen
 }
 
 export function handleTouchEnd({ channel, note }: { channel: ValidInstruments; note: Note }): [boolean, boolean] {
-  // TODO if statements for each type of instruments
-	channel.stop(note.value);
+	if (!(channel instanceof DrumMachine)) {
+		channel.stop(note.value);
+	}
 	let touching = false;
 	let keyIsDown = false;
 	return [touching, keyIsDown];
@@ -44,16 +45,19 @@ export function handleMouseDown({ channel, note, e, velocity }: { channel: Valid
 	// if (touching) return;
 	console.log(e);
 	velocity = getVelocity(e);
+	// console.log(channel.sampleNames)
 
-	channel.start({ note: note.value, velocity, loop: true });
+	channel.start({ note: note.value, velocity });
 	let mouseDown = true;
 	let keyIsDown = true;
 	return [mouseDown, keyIsDown, velocity];
 }
 
 export function handleMouseUp({ channel, note }: { channel: ValidInstruments; note: Note }): [boolean, boolean] {
-  // TODO if statements for each type of instruments
-	channel.stop(note.value);
+	// TODO if statements for each type of instruments
+	if (!(channel instanceof DrumMachine)) {
+		channel.stop(note.value);
+	}
 	let mouseDown = false;
 	let keyIsDown = false;
 	return [mouseDown, keyIsDown];
@@ -110,8 +114,9 @@ export function handleMouseEnter({
 }
 
 export function handleMouseLeave({ channel, note }: { channel: ValidInstruments; note: Note }) {
-  // TODO if statements for each type of instruments
-	channel.stop(note.value);
+	if (!(channel instanceof DrumMachine)) {
+		channel.stop(note.value);
+	}
 	let keyIsDown = false;
 	return [keyIsDown];
 }
