@@ -1,11 +1,13 @@
 <script lang="ts">
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
-	import { getMidiNotes, noteValueOffset } from "$lib/midinotes";
-	import { Soundfont, getSoundfontNames, ElectricPiano, getElectricPianoNames } from "smplr";
+	import { getMidiNotes, noteValueOffset, getDrumNotes } from "$lib/midinotes";
+	import type { InstrumentType, Note, ValidInstruments } from "$lib/types";
+	import { Soundfont, getSoundfontNames, ElectricPiano, getElectricPianoNames, DrumMachine, getDrumMachineNames, SplendidGrandPiano, Mellotron, getMellotronNames } from "smplr";
 	import { SoundFont2 } from "soundfont2";
 
-	let { instrumentType, library } = $props();
+	let { instrumentType, library }: { instrumentType: string; library: string } = $props();
 
+	// give focus to keyboard at start to directly enable keyboard input
 	$effect(() => {
 		queueMicrotask(() => {
 			const minimumNoteElement = document.getElementById(getMidiNotes()[minimumNoteValue].name);
@@ -32,11 +34,29 @@
 	let keyDown: { [key: string]: boolean } = $state({});
 	let touching = $state(false);
 	let velocity = $state(80);
-	let instrumentList = initializeInstrumentList();
+	// lastKey used for touchmove later
+	let lastKey = $state();
+
 	let instrument = $state(initializeStartingInstrument());
+	let instrumentList = $state(initializeInstrumentList());
 	let instrumentValue = $state(instrumentList.indexOf(instrument));
 	let displayInstrument = $derived(instrumentList[instrumentValue]);
-	let lastKey = $state();
+	let channel = $state(initializeInstrumentType());
+	let notes = $state(initializeInstrumentNotes());
+
+  // drums use channel for notes but notes declaration can run before the channel is fully loaded, so update after loading is complete
+  // above declaration makes typescript happy
+	channel.load.then(() => {
+		notes = initializeInstrumentNotes();
+	});
+
+	// if (!notes[0].value) {
+	// 	setTimeout(() => {
+	// 		notes = initializeInstrumentNotes();
+	// 	}, 1000);
+	// }
+
+	// $inspect(notes);
 
 	// TODO use sf2 instead later
 	// const channel = $derived(new Soundfont2Sampler(context, {
@@ -61,12 +81,33 @@
 	//     instrument = channel.instrumentNames[0];
 	//     displayInstrument = channel.instrumentNames[0];
 	//   }
+
+  // TODO maybe this style is better?
+	// function getInstrumentNotes(instrumentType: string) {
+	// 	const instrumentNotes = {
+	// 		keyboard: getMidiNotes(),
+
+	// 		electricpiano: getMidiNotes(),
+
+	// 		mellotron: getMidiNotes(),
+
+	// 		drums: getDrumNotes(channel),
+	// 	};
+	// 	return instrumentNotes[instrumentType];
+	// }
+
 	function initializeStartingInstrument() {
 		if (instrumentType === "keyboard" && library === "smplr") {
 			return "marimba";
 		}
 		if (instrumentType === "electricpiano" && library === "smplr") {
 			return "CP80";
+		}
+		if (instrumentType === "mellotron" && library === "smplr") {
+			return "300 STRINGS CELLO";
+		}
+		if (instrumentType === "drums" && library === "smplr") {
+			return "TR-808";
 		}
 		return "starting instrument not initialized";
 	}
@@ -77,6 +118,31 @@
 		}
 		if (instrumentType === "electricpiano" && library === "smplr") {
 			return getElectricPianoNames();
+		}
+		if (instrumentType === "mellotron" && library === "smplr") {
+			return getMellotronNames();
+		}
+		if (instrumentType === "drums" && library === "smplr") {
+			return getDrumMachineNames();
+		}
+		return [];
+	}
+
+	function initializeInstrumentNotes() {
+		if (instrumentType === "keyboard" && library === "smplr") {
+			return getMidiNotes();
+		}
+		if (instrumentType === "electricpiano" && library === "smplr") {
+			return getMidiNotes();
+		}
+		if (instrumentType === "mellotron" && library === "smplr") {
+			return getMidiNotes();
+		}
+		if (instrumentType === "piano" && library === "smplr") {
+			return getMidiNotes();
+		}
+		if (instrumentType === "drums" && library === "smplr") {
+			return getDrumNotes(channel as DrumMachine);
 		}
 		return [];
 	}
@@ -92,22 +158,37 @@
 		}
 		if (instrumentType === "electricpiano" && library === "smplr") {
 			return new ElectricPiano(context, {
-				instrument: "WurlitzerEP200",
+				instrument,
 				volume: 60,
 			});
-		} else {
-			// default
-			return new Soundfont(context, {
+		}
+		if (instrumentType === "mellotron" && library === "smplr") {
+			return new Mellotron(context, {
 				instrument,
-				volume: 80,
-				// loadLoopData: true
+				volume: 60,
 			});
 		}
+		if (instrumentType === "piano" && library === "smplr") {
+			return new SplendidGrandPiano(context, {
+				volume: 60,
+			});
+		}
+		if (instrumentType === "drums" && library === "smplr") {
+			return new DrumMachine(context, {
+				instrument,
+				volume: 60,
+			});
+		}
+		// default
+		return new Soundfont(context, {
+			instrument,
+			volume: 80,
+			// loadLoopData: true
+		});
 	}
-	let channel = $state(initializeInstrumentType());
 </script>
 
-<p class="absolute left-[50vw] top-8 w-min text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
+<p class="absolute left-[50vw] top-14 text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
 <div class="flex">
 	<select class="mr-2 mt-4 px-2" aria-label="octave picker select" bind:value={octave} name="" id="">
 		<option value="1">1</option>
@@ -130,13 +211,16 @@
 		onchange={() => {
 			instrument = instrumentList[instrumentValue];
 			channel = initializeInstrumentType();
+			channel.load.then(() => {
+				notes = initializeInstrumentNotes();
+			});
 			console.log(instrument);
 			// console.log(instrument);
 		}} />
 </div>
 <div id="keyboard" class="!m-px portrait:hidden">
 	{#key octave}
-		{#each getMidiNotes() as note, i}
+		{#each notes as note, i}
 			{#if i >= minimumNoteValue && i <= maximumNoteValue}
 				<!-- TODO fix touch move event, need support for multiple touch and move somehow + fix displayed note -->
 				<!-- on:touchmove={(e) => ([keyDown[currentKey], lastKey] = handleTouchMove({ touching, velocity, mouseDown, channel, note, e, lastKey }))} -->
@@ -152,8 +236,8 @@
 						console.log(e);
 						// TODO add support for raising/lowering octave with shift and ctrl
 						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
-						const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
-						const pressedKeyValue = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value;
+						const pressedKeyName = notes[minimumNoteValue + noteValueOffset[e.code]].name;
+						const pressedKeyValue = notes[minimumNoteValue + noteValueOffset[e.code]].value;
 						if (!keyDown[pressedKeyName])
 							channel.start({
 								note: pressedKeyValue,
@@ -163,10 +247,11 @@
 					}}
 					onkeyup={(e) => {
 						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
-						const pressedKeyName = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].name;
-						const pressedKeyValue = getMidiNotes()[minimumNoteValue + noteValueOffset[e.code]].value;
-						channel.stop(pressedKeyValue);
-						console.log("aaa");
+						const pressedKeyName = notes[minimumNoteValue + noteValueOffset[e.code]].name;
+						const pressedKeyValue = notes[minimumNoteValue + noteValueOffset[e.code]].value;
+						if (!(channel instanceof DrumMachine)) {
+							channel.stop(pressedKeyValue);
+						}
 						setKeyDown(pressedKeyName, false);
 					}}
 					class:black={note.name.includes("#")}
