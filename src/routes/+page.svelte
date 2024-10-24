@@ -7,9 +7,6 @@
 	import { browser } from "$app/environment";
 	import { color } from "$lib/stores";
 	import Keyboard from "$lib/instruments/Keyboard.svelte";
-	import Drums from "$lib/instruments/Drums.svelte";
-	import Piano from "$lib/instruments/Piano.svelte";
-	import ElectricPiano from "$lib/instruments/ElectricPiano.svelte";
 
 	// let color = "blue";
 	// $: if (browser) color = localStorage.color;
