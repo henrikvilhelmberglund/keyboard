@@ -1,10 +1,10 @@
 <script>
-	import Keyboard from "../Keyboard.svelte";
+	import Keyboard from "$lib/instruments/Keyboard.svelte";
 
   
 </script>
 
-<Keyboard instrumentType="keyboard" library="spessasynth" />
+<Keyboard instrumentType="soundfont" library="spessasynth" />
 
 <style>
   
