@@ -4,6 +4,7 @@
 	import type { InstrumentType, Note, ValidInstruments } from "$lib/types";
 	import { Soundfont, getSoundfontNames, ElectricPiano, getElectricPianoNames, DrumMachine, getDrumMachineNames, SplendidGrandPiano, Mellotron, getMellotronNames } from "smplr";
 	import { SoundFont2 } from "soundfont2";
+	import { Synthetizer } from "spessasynth_lib";
 
 	let { instrumentType, library }: { instrumentType: string; library: string } = $props();
 
@@ -44,11 +45,13 @@
 	let channel = $state(initializeInstrumentType());
 	let notes = $state(initializeInstrumentNotes());
 
-  // drums use channel for notes but notes declaration can run before the channel is fully loaded, so update after loading is complete
-  // above declaration makes typescript happy
-	channel.load.then(() => {
-		notes = initializeInstrumentNotes();
-	});
+	// drums use channel for notes but notes declaration can run before the channel is fully loaded, so update after loading is complete
+	// above declaration makes typescript happy
+	if (library === "smplr") {
+		channel.load.then(() => {
+			notes = initializeInstrumentNotes();
+		});
+	}
 
 	// if (!notes[0].value) {
 	// 	setTimeout(() => {
@@ -56,7 +59,7 @@
 	// 	}, 1000);
 	// }
 
-	// $inspect(notes);
+	// $inspect(instrument, instrumentList, instrumentValue, displayInstrument, channel, notes);
 
 	// TODO use sf2 instead later
 	// const channel = $derived(new Soundfont2Sampler(context, {
@@ -82,7 +85,7 @@
 	//     displayInstrument = channel.instrumentNames[0];
 	//   }
 
-  // TODO maybe this style is better?
+	// TODO maybe this style is better?
 	// function getInstrumentNotes(instrumentType: string) {
 	// 	const instrumentNotes = {
 	// 		keyboard: getMidiNotes(),
@@ -109,6 +112,9 @@
 		if (instrumentType === "drums" && library === "smplr") {
 			return "TR-808";
 		}
+		if (instrumentType === "soundfont" && library === "spessasynth") {
+			return "marimba";
+		}
 		return "starting instrument not initialized";
 	}
 
@@ -124,6 +130,9 @@
 		}
 		if (instrumentType === "drums" && library === "smplr") {
 			return getDrumMachineNames();
+		}
+		if (instrumentType === "soundfont" && library === "spessasynth") {
+			return getSoundfontNames();
 		}
 		return [];
 	}
@@ -143,6 +152,9 @@
 		}
 		if (instrumentType === "drums" && library === "smplr") {
 			return getDrumNotes(channel as DrumMachine);
+		}
+		if (instrumentType === "soundfont" && library === "spessasynth") {
+			return getMidiNotes();
 		}
 		return [];
 	}
@@ -179,12 +191,28 @@
 				volume: 60,
 			});
 		}
+		if (instrumentType === "soundfont" && library === "spessasynth") {
+			context.audioWorklet.addModule("/worklet_processor.min.js").then(() => {
+				fetch(`/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`).then(async (response) => {
+					console.log(instrumentValue);
+					console.log(response);
+					// document.getElementById("midi_input").addEventListener("change", async event => {
+					// check if any files are added
+					// if (!event.target.files[0]) {
+					//  return;
+					// }
+					// const midiFile = await(event.target.files[0].arrayBuffer()); // get the file and conver to ArrayBuffer
+					// }
+					let soundFontArrayBuffer = await response.arrayBuffer();
+					channel = new Synthetizer(context.destination, soundFontArrayBuffer); // create the synthetizer
+					notes = initializeInstrumentNotes();
+
+					// const seq = new Sequencer([{binary: midiFile}], synth); // create the sequencer
+				});
+			});
+		}
 		// default
-		return new Soundfont(context, {
-			instrument,
-			volume: 80,
-			// loadLoopData: true
-		});
+		return "instrument not found";
 	}
 </script>
 
@@ -209,11 +237,15 @@
 		max="127"
 		bind:value={instrumentValue}
 		onchange={() => {
-			instrument = instrumentList[instrumentValue];
-			channel = initializeInstrumentType();
-			channel.load.then(() => {
-				notes = initializeInstrumentNotes();
-			});
+			if (library === "smplr" && typeof channel !== "string") {
+				instrument = instrumentList[instrumentValue];
+				channel = initializeInstrumentType();
+				channel.load.then(() => {
+					notes = initializeInstrumentNotes();
+				});
+			} else {
+				channel = initializeInstrumentType();
+			}
 			console.log(instrument);
 			// console.log(instrument);
 		}} />
@@ -226,31 +258,45 @@
 				<!-- on:touchmove={(e) => ([keyDown[currentKey], lastKey] = handleTouchMove({ touching, velocity, mouseDown, channel, note, e, lastKey }))} -->
 				<button
 					id={note.name}
-					ontouchstart={(e) => ([touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e }))}
+					ontouchstart={(e) => {
+						context.resume();
+						[touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
+					}}
 					ontouchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
-					onmousedown={(e) => (!touching ? ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ channel, note, e, velocity })) : null)}
+					onmousedown={(e) => {
+						context.resume();
+						!touching ? ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ channel, note, e, velocity })) : null;
+					}}
 					onmouseup={() => (!touching ? ([mouseDown, keyDown[note.name]] = handleMouseUp({ channel, note })) : null)}
 					onmouseenter={(e) => (!touching ? ([keyDown[note.name]] = handleMouseEnter({ velocity, mouseDown, channel, note, e })) : null)}
 					onmouseleave={() => (!touching ? ([keyDown[note.name]] = handleMouseLeave({ channel, note })) : null)}
 					onkeydown={(e) => {
 						console.log(e);
+						context.resume();
 						// TODO add support for raising/lowering octave with shift and ctrl
 						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
 						const pressedKeyName = notes[minimumNoteValue + noteValueOffset[e.code]].name;
 						const pressedKeyValue = notes[minimumNoteValue + noteValueOffset[e.code]].value;
-						if (!keyDown[pressedKeyName])
-							channel.start({
-								note: pressedKeyValue,
-								velocity,
-							});
+						if (!keyDown[pressedKeyName]) {
+							if (channel instanceof Synthetizer) {
+								channel.noteOn(0, pressedKeyValue, velocity);
+							} else {
+								channel.start({
+									note: pressedKeyValue,
+									velocity,
+								});
+							}
+						}
 						setKeyDown(pressedKeyName, true);
 					}}
 					onkeyup={(e) => {
 						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
 						const pressedKeyName = notes[minimumNoteValue + noteValueOffset[e.code]].name;
 						const pressedKeyValue = notes[minimumNoteValue + noteValueOffset[e.code]].value;
-						if (!(channel instanceof DrumMachine)) {
+						if (!(channel instanceof DrumMachine) && !(channel instanceof Synthetizer)) {
 							channel.stop(pressedKeyValue);
+						} else if (channel instanceof Synthetizer) {
+							channel.noteOff(0, pressedKeyValue);
 						}
 						setKeyDown(pressedKeyName, false);
 					}}
