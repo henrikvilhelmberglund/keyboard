@@ -40,20 +40,21 @@
 
 	let instrument = $state(initializeStartingInstrument());
 	let instrumentList = $state(initializeInstrumentList());
-	let instrumentValue = $state(instrumentList.indexOf(instrument));
+	let instrumentValue = $state(instrumentList.indexOf(initializeStartingInstrument()));
 	let displayInstrument = $derived(instrumentList[instrumentValue]);
 	let channel = $state(initializeInstrumentType());
 	let notes = $state(initializeInstrumentNotes());
 
 	// drums use channel for notes but notes declaration can run before the channel is fully loaded, so update after loading is complete
-	// above declaration makes typescript happy
-	if (library === "smplr") {
-		if (channel) {
-			channel.load.then(() => {
-				notes = initializeInstrumentNotes();
-			});
+	$effect(() => {
+		if (library === "smplr") {
+			if (channel && !(channel instanceof Synthetizer)) {
+				channel.load.then(() => {
+					notes = initializeInstrumentNotes();
+				});
+			}
 		}
-	}
+	});
 
 	// if (!notes[0].value) {
 	// 	setTimeout(() => {
@@ -162,7 +163,7 @@
 	}
 
 	// initialize instrument type
-	function initializeInstrumentType() {
+	function initializeInstrumentType(): ValidInstruments | undefined {
 		if (instrumentType === "keyboard" && library === "smplr") {
 			return new Soundfont(context, {
 				instrument,
@@ -207,7 +208,7 @@
 					// }
 					let soundFontArrayBuffer = await response.arrayBuffer();
 					notes = initializeInstrumentNotes();
-					// channel = new Synthetizer(context.destination, soundFontArrayBuffer); // create the synthetizer
+					channel = new Synthetizer(context.destination, soundFontArrayBuffer); // create the synthetizer
 					return new Synthetizer(context.destination, soundFontArrayBuffer);
 
 					// const seq = new Sequencer([{binary: midiFile}], synth); // create the sequencer
@@ -242,7 +243,7 @@
 			if (library === "smplr") {
 				instrument = instrumentList[instrumentValue];
 				channel = initializeInstrumentType();
-				if (channel) {
+				if (channel && !(channel instanceof Synthetizer)) {
 					channel.load.then(() => {
 						notes = initializeInstrumentNotes();
 					});
