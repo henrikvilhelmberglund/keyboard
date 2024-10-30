@@ -36,6 +36,7 @@
 		"prismjs": "^1.29.0",
 		"smplr": "^0.15.1",
 		"soundfont2": "^0.5.0",
+		"spessasynth_lib": "^3.21.13",
 		"svelte": "^5.0.0-next.262",
 		"svelte-check": "^4.0.4",
 		"svelte-persisted-store": "^0.11.0",

@@ -7,12 +7,13 @@
 	let { children } = $props();
 
 	let routes = {
-		"/keyboard": "Keyboard",
-		"/piano": "Piano",
-		"/mellotron": "Mellotron",
-		"/electricpiano": "Electric Piano",
-		"/soundfont-drums": "Soundfont Drums",
-		"/drums": "Drums",
+    "/instruments/soundfont": "Soundfont player",
+		"/instruments/keyboard": "Keyboard",
+		"/instruments/piano": "Piano",
+		"/instruments/mellotron": "Mellotron",
+		"/instruments/electricpiano": "Electric Piano",
+		"/instruments/soundfont-drums": "Soundfont Drums",
+		"/instruments/drums": "Drums",
 	};
 
 	let currentRoute = $derived($page.route.id);
@@ -43,7 +44,7 @@
 							class:!mt-2={url === currentRoute || (url === "/keyboard" && currentRoute === "/")}
 							class="border-primary-500 bg-primary-300 absolute z-10 w-36 rounded-2xl border-2 p-1 py-4 text-center transition-all">{name}</span>
 					</span>
-					<span class="border-primary-400 bg-primary-400 absolute inset-0 top-4 w-36 rounded-2xl border-2 p-1 py-6" />
+					<span class="border-primary-400 bg-primary-400 absolute inset-0 top-4 w-36 rounded-2xl border-2 p-1 py-6"></span>
 				</a>
 			{/each}
 		</div>

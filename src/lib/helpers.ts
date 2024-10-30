@@ -1,4 +1,6 @@
-import type { Soundfont } from "smplr";
+import { DrumMachine } from "smplr";
+import type { Note, ValidInstruments } from "./types";
+import { Synthetizer } from "spessasynth_lib";
 
 function getVelocity(e: MouseEvent) {
 	const keyRect = (<HTMLButtonElement>e.target).getBoundingClientRect();
@@ -13,19 +15,27 @@ function getVelocity(e: MouseEvent) {
 	return velocity;
 }
 
-export function handleTouchStart({ channel, note, e }: { channel: Soundfont; note: Note; e: TouchEvent }): [boolean, boolean, string] {
+export function handleTouchStart({ channel, note, e }: { channel: ValidInstruments; note: Note; e: TouchEvent }): [boolean, boolean, string] {
 	e.preventDefault();
 	if (e.touches.length > 1) {
 	}
-	channel.start(note.value);
+	if (channel instanceof Synthetizer) {
+		channel.noteOn(0, note.value as number, 80, false);
+	} else {
+		channel.start({ note: note.value });
+	}
 	let touching = true;
 	let keyIsDown = true;
 	let lastKey = note.name;
 	return [touching, keyIsDown, lastKey];
 }
 
-export function handleTouchEnd({ channel, note }: { channel: Soundfont; note: Note }): [boolean, boolean] {
-	channel.stop(note.value);
+export function handleTouchEnd({ channel, note }: { channel: ValidInstruments; note: Note }): [boolean, boolean] {
+	if (!(channel instanceof DrumMachine) && !(channel instanceof Synthetizer)) {
+		channel.stop(note.value);
+	} else if (channel instanceof Synthetizer) {
+		channel.noteOff(0, note.value as number);
+	}
 	let touching = false;
 	let keyIsDown = false;
 	return [touching, keyIsDown];
@@ -38,19 +48,30 @@ export function handleTouchEndDrums(): [boolean, boolean] {
 	return [touching, keyIsDown];
 }
 
-export function handleMouseDown({ channel, note, e, velocity }: { channel: Soundfont; note: Note; e: MouseEvent; velocity: number }): [boolean, boolean, number] {
+export function handleMouseDown({ channel, note, e, velocity }: { channel: ValidInstruments; note: Note; e: MouseEvent; velocity: number }): [boolean, boolean, number] {
 	// if (touching) return;
 	console.log(e);
 	velocity = getVelocity(e);
+	// console.log(channel.sampleNames)
 
-	channel.start({ note: note.value, velocity, loop: true });
+	if (channel instanceof Synthetizer) {
+		channel.noteOn(0, note.value as number, velocity, false);
+	} else {
+		channel.start({ note: note.value, velocity });
+	}
 	let mouseDown = true;
 	let keyIsDown = true;
 	return [mouseDown, keyIsDown, velocity];
 }
 
-export function handleMouseUp({ channel, note }: { channel: Soundfont; note: Note }): [boolean, boolean] {
-	channel.stop(note.value);
+export function handleMouseUp({ channel, note }: { channel: ValidInstruments; note: Note }): [boolean, boolean] {
+	// TODO if statements for each type of instruments
+	if (!(channel instanceof DrumMachine) && !(channel instanceof Synthetizer)) {
+		channel.stop(note.value);
+	} else if (channel instanceof Synthetizer) {
+		channel.noteOff(0, note.value as number);
+	}
+
 	let mouseDown = false;
 	let keyIsDown = false;
 	return [mouseDown, keyIsDown];
@@ -63,7 +84,7 @@ export function handleMouseUpDrums({ touching }: { touching: boolean }): [boolea
 	return [mouseDown, keyIsDown];
 }
 
-export function handleTouchMove({ lastKey, channel, e }: { lastKey: string; channel: Soundfont; e: TouchEvent }): [boolean, string] {
+export function handleTouchMove({ lastKey, channel, e }: { lastKey: string; channel: ValidInstruments; e: TouchEvent }): [boolean, string] {
 	let keyIsDown = false;
 	const touchedKey = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
 	console.log(touchedKey);
@@ -77,25 +98,51 @@ export function handleTouchMove({ lastKey, channel, e }: { lastKey: string; chan
 	console.log("currentKey", currentKey);
 	console.log("lastKey", lastKey);
 	if (currentKey !== lastKey) {
-		channel.start({ note: currentKey });
+    if (channel instanceof Synthetizer) {
+      // TODO implement touch
+      // @ts-ignore
+			channel.noteOn(0, currentKey, velocity, false);
+		} else {
+			channel.start({ note: currentKey });
+		}
 		keyIsDown = true;
 	}
 
 	return [keyIsDown, currentKey];
 }
 
-export function handleMouseEnter({ mouseDown, channel, note, e, velocity }: { mouseDown: boolean; channel: Soundfont; note: Note; e: MouseEvent; velocity: number }): [boolean] {
+export function handleMouseEnter({
+	mouseDown,
+	channel,
+	note,
+	e,
+	velocity,
+}: {
+	mouseDown: boolean;
+	channel: ValidInstruments;
+	note: Note;
+	e: MouseEvent;
+	velocity: number;
+}): [boolean] {
 	let keyIsDown = false;
 	if (mouseDown) {
 		velocity = getVelocity(e);
-		channel.start({ note: note.value, velocity });
+    if (channel instanceof Synthetizer) {
+      channel.noteOn(0, note.value as number, velocity, false);
+		} else {
+      channel.start({ note: note.value, velocity });
+		}
 		keyIsDown = true;
 	}
 	return [keyIsDown];
 }
 
-export function handleMouseLeave({ channel, note }: { channel: Soundfont; note: Note }) {
-	channel.stop(note.value);
+export function handleMouseLeave({ channel, note }: { channel: ValidInstruments; note: Note }) {
+	if (!(channel instanceof DrumMachine) && !(channel instanceof Synthetizer)) {
+		channel.stop(note.value);
+	} else if (channel instanceof Synthetizer) {
+		channel.noteOff(0, note.value as number);
+	}
 	let keyIsDown = false;
 	return [keyIsDown];
 }
