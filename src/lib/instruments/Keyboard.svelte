@@ -37,6 +37,7 @@
 	let velocity = $state(80);
 	// lastKey used for touchmove later
 	let lastKey = $state();
+	let workletLoaded = $state(false);
 
 	let instrument = $state(initializeStartingInstrument());
 	let instrumentList = $state(initializeInstrumentList());
@@ -195,10 +196,27 @@
 			});
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
-			context.audioWorklet.addModule("/worklet_processor.min.js").then(() => {
+			if (!workletLoaded) {
+				context.audioWorklet.addModule("/worklet_processor.min.js").then(() => {
+					workletLoaded = true;
+					fetch(`/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`).then(async (response) => {
+						// document.getElementById("midi_input").addEventListener("change", async event => {
+						// check if any files are added
+						// if (!event.target.files[0]) {
+						//  return;
+						// }
+						// const midiFile = await(event.target.files[0].arrayBuffer()); // get the file and conver to ArrayBuffer
+						// }
+						let soundFontArrayBuffer = await response.arrayBuffer();
+						notes = initializeInstrumentNotes();
+						channel = new Synthetizer(context.destination, soundFontArrayBuffer); // create the synthetizer
+						return new Synthetizer(context.destination, soundFontArrayBuffer);
+
+						// const seq = new Sequencer([{binary: midiFile}], synth); // create the sequencer
+					});
+				});
+			} else {
 				fetch(`/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`).then(async (response) => {
-					console.log(instrumentValue);
-					console.log(response);
 					// document.getElementById("midi_input").addEventListener("change", async event => {
 					// check if any files are added
 					// if (!event.target.files[0]) {
@@ -213,7 +231,7 @@
 
 					// const seq = new Sequencer([{binary: midiFile}], synth); // create the sequencer
 				});
-			});
+			}
 		}
 		// default
 	}
