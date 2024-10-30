@@ -371,7 +371,7 @@
 	#keyboard button {
 		-webkit-tap-highlight-color: transparent;
 	}
-	.fancy-shadow {
+	/* .fancy-shadow {
 		box-shadow:
 			rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
 			rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
@@ -381,7 +381,7 @@
 			rgba(0, 0, 0, 0.09) 0px 8px 4px,
 			rgba(0, 0, 0, 0.09) 0px 16px 8px,
 			rgba(0, 0, 0, 0.09) 0px 32px 16px;
-	}
+	} */
 
 	/* TODO turn into unocss shortcuts with regex */
 	/* TODO make it look good */
