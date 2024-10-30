@@ -48,9 +48,11 @@
 	// drums use channel for notes but notes declaration can run before the channel is fully loaded, so update after loading is complete
 	// above declaration makes typescript happy
 	if (library === "smplr") {
-		channel.load.then(() => {
-			notes = initializeInstrumentNotes();
-		});
+		if (channel) {
+			channel.load.then(() => {
+				notes = initializeInstrumentNotes();
+			});
+		}
 	}
 
 	// if (!notes[0].value) {
@@ -204,15 +206,15 @@
 					// const midiFile = await(event.target.files[0].arrayBuffer()); // get the file and conver to ArrayBuffer
 					// }
 					let soundFontArrayBuffer = await response.arrayBuffer();
-					channel = new Synthetizer(context.destination, soundFontArrayBuffer); // create the synthetizer
 					notes = initializeInstrumentNotes();
+					// channel = new Synthetizer(context.destination, soundFontArrayBuffer); // create the synthetizer
+					return new Synthetizer(context.destination, soundFontArrayBuffer);
 
 					// const seq = new Sequencer([{binary: midiFile}], synth); // create the sequencer
 				});
 			});
 		}
 		// default
-		return "instrument not found";
 	}
 </script>
 
@@ -237,12 +239,14 @@
 		max="127"
 		bind:value={instrumentValue}
 		onchange={() => {
-			if (library === "smplr" && typeof channel !== "string") {
+			if (library === "smplr") {
 				instrument = instrumentList[instrumentValue];
 				channel = initializeInstrumentType();
-				channel.load.then(() => {
-					notes = initializeInstrumentNotes();
-				});
+				if (channel) {
+					channel.load.then(() => {
+						notes = initializeInstrumentNotes();
+					});
+				}
 			} else {
 				channel = initializeInstrumentType();
 			}
@@ -253,23 +257,31 @@
 <div id="keyboard" class="!m-px portrait:hidden">
 	{#key octave}
 		{#each notes as note, i}
-			{#if i >= minimumNoteValue && i <= maximumNoteValue}
+			{#if i >= minimumNoteValue && i <= maximumNoteValue && channel}
 				<!-- TODO fix touch move event, need support for multiple touch and move somehow + fix displayed note -->
 				<!-- on:touchmove={(e) => ([keyDown[currentKey], lastKey] = handleTouchMove({ touching, velocity, mouseDown, channel, note, e, lastKey }))} -->
 				<button
 					id={note.name}
 					ontouchstart={(e) => {
 						context.resume();
-						[touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
+						if (channel) [touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
 					}}
-					ontouchend={() => ([touching, keyDown[note.name]] = handleTouchEnd({ channel, note }))}
+					ontouchend={() => {
+						if (channel) [touching, keyDown[note.name]] = handleTouchEnd({ channel, note });
+					}}
 					onmousedown={(e) => {
 						context.resume();
-						!touching ? ([mouseDown, keyDown[note.name], velocity] = handleMouseDown({ channel, note, e, velocity })) : null;
+						if (!touching && channel) [mouseDown, keyDown[note.name], velocity] = handleMouseDown({ channel, note, e, velocity });
 					}}
-					onmouseup={() => (!touching ? ([mouseDown, keyDown[note.name]] = handleMouseUp({ channel, note })) : null)}
-					onmouseenter={(e) => (!touching ? ([keyDown[note.name]] = handleMouseEnter({ velocity, mouseDown, channel, note, e })) : null)}
-					onmouseleave={() => (!touching ? ([keyDown[note.name]] = handleMouseLeave({ channel, note })) : null)}
+					onmouseup={() => {
+						if (!touching && channel) [mouseDown, keyDown[note.name]] = handleMouseUp({ channel, note });
+					}}
+					onmouseenter={(e) => {
+						if (!touching && channel) [keyDown[note.name]] = handleMouseEnter({ velocity, mouseDown, channel, note, e });
+					}}
+					onmouseleave={() => {
+						if (!touching && channel) [keyDown[note.name]] = handleMouseLeave({ channel, note });
+					}}
 					onkeydown={(e) => {
 						console.log(e);
 						context.resume();
@@ -277,9 +289,9 @@
 						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
 						const pressedKeyName = notes[minimumNoteValue + noteValueOffset[e.code]].name;
 						const pressedKeyValue = notes[minimumNoteValue + noteValueOffset[e.code]].value;
-						if (!keyDown[pressedKeyName]) {
+						if (!keyDown[pressedKeyName] && channel) {
 							if (channel instanceof Synthetizer) {
-								channel.noteOn(0, pressedKeyValue, velocity);
+								channel.noteOn(0, pressedKeyValue as number, velocity);
 							} else {
 								channel.start({
 									note: pressedKeyValue,
@@ -293,10 +305,10 @@
 						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
 						const pressedKeyName = notes[minimumNoteValue + noteValueOffset[e.code]].name;
 						const pressedKeyValue = notes[minimumNoteValue + noteValueOffset[e.code]].value;
-						if (!(channel instanceof DrumMachine) && !(channel instanceof Synthetizer)) {
+						if (channel && !(channel instanceof DrumMachine) && !(channel instanceof Synthetizer)) {
 							channel.stop(pressedKeyValue);
 						} else if (channel instanceof Synthetizer) {
-							channel.noteOff(0, pressedKeyValue);
+							channel.noteOff(0, pressedKeyValue as number);
 						}
 						setKeyDown(pressedKeyName, false);
 					}}
