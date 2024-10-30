@@ -11,5 +11,8 @@ export default defineConfig({
 			injectReset: "@unocss/reset/tailwind.css",
 		}),
 		sveltekit(),
-	],
+  ],
+  optimizeDeps: {
+    exclude: ['spessasynth_lib']
+  }
 });
