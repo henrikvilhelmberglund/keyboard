@@ -204,7 +204,7 @@
 					fetch(
 						DEV
 							? `/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`
-							: `https://henrikvilhelmberglund.com/split-sf2/mysung/0${instrumentValue.toString().padStart(2, "0")}.sf2`
+							: `https://henrikvilhelmberglund.com/split-sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`
 					).then(async (response) => {
 						// document.getElementById("midi_input").addEventListener("change", async event => {
 						// check if any files are added
@@ -225,7 +225,7 @@
 				fetch(
 					DEV
 						? `/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`
-						: `https://henrikvilhelmberglund.com/split-sf2/mysung/0${instrumentValue.toString().padStart(2, "0")}.sf2`
+						: `https://henrikvilhelmberglund.com/split-sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`
 				).then(async (response) => {
 					// document.getElementById("midi_input").addEventListener("change", async event => {
 					// check if any files are added
