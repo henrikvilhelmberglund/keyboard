@@ -245,6 +245,18 @@
 		}
 		// default
 	}
+
+	function changeSoundFont() {
+		fetch(
+			DEV
+				? `/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`
+				: `https://henrikvilhelmberglund.com/split-sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`
+		).then(async (response) => {
+			let soundFontArrayBuffer = await response.arrayBuffer();
+			notes = initializeInstrumentNotes();
+			await (<Synthetizer>channel).soundfontManager.reloadManager(soundFontArrayBuffer);
+		});
+	}
 </script>
 
 <p class="absolute left-[50vw] top-14 text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
@@ -277,7 +289,7 @@
 					});
 				}
 			} else {
-				channel = initializeInstrumentType();
+				changeSoundFont();
 			}
 			console.log(instrument);
 			// console.log(instrument);
