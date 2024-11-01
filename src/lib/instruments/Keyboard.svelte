@@ -8,6 +8,8 @@
 
 	let { instrumentType, library }: { instrumentType: string; library: string } = $props();
 
+	const DEV = false;
+
 	// give focus to keyboard at start to directly enable keyboard input
 	$effect(() => {
 		queueMicrotask(() => {
@@ -199,7 +201,11 @@
 			if (!workletLoaded) {
 				context.audioWorklet.addModule("/worklet_processor.min.js").then(() => {
 					workletLoaded = true;
-					fetch(`/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`).then(async (response) => {
+					fetch(
+						DEV
+							? `/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`
+							: `https://henrikvilhelmberglund.com/split-sf2/mysung/0${instrumentValue.toString().padStart(2, "0")}.sf2`
+					).then(async (response) => {
 						// document.getElementById("midi_input").addEventListener("change", async event => {
 						// check if any files are added
 						// if (!event.target.files[0]) {
@@ -216,7 +222,11 @@
 					});
 				});
 			} else {
-				fetch(`/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`).then(async (response) => {
+				fetch(
+					DEV
+						? `/sf2/musyng/0${instrumentValue.toString().padStart(2, "0")}.sf2`
+						: `https://henrikvilhelmberglund.com/split-sf2/mysung/0${instrumentValue.toString().padStart(2, "0")}.sf2`
+				).then(async (response) => {
 					// document.getElementById("midi_input").addEventListener("change", async event => {
 					// check if any files are added
 					// if (!event.target.files[0]) {
