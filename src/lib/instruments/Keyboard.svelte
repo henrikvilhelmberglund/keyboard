@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset, getDrumNotes } from "$lib/midinotes";
+	import { soundfontNames } from "$lib/soundfontInstrumentNames/musyng/musyng";
 	import type { InstrumentType, Note, ValidInstruments } from "$lib/types";
 	import { Soundfont, getSoundfontNames, ElectricPiano, getElectricPianoNames, DrumMachine, getDrumMachineNames, SplendidGrandPiano, Mellotron, getMellotronNames } from "smplr";
 	import { SoundFont2 } from "soundfont2";
@@ -119,7 +120,7 @@
 			return "TR-808";
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
-			return "marimba";
+			return "Marimba";
 		}
 		return "starting instrument not initialized";
 	}
@@ -138,7 +139,7 @@
 			return getDrumMachineNames();
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
-			return getSoundfontNames();
+			return soundfontNames;
 		}
 		return [];
 	}
@@ -291,7 +292,7 @@
 			} else {
 				changeSoundFont();
 			}
-			console.log(instrument);
+			// console.log(instrument);
 			// console.log(instrument);
 		}} />
 </div>
@@ -324,7 +325,7 @@
 						if (!touching && channel) [keyDown[note.name]] = handleMouseLeave({ channel, note });
 					}}
 					onkeydown={(e) => {
-						console.log(e);
+						// console.log(e);
 						context.resume();
 						// TODO add support for raising/lowering octave with shift and ctrl
 						if (/^(Space|AltLeft|ShiftLeft|ControlLeft)$/.test(e.code)) return;
