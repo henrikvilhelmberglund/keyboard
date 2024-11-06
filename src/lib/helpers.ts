@@ -15,10 +15,9 @@ function getVelocity(e: MouseEvent) {
 	return velocity;
 }
 
-export function handleTouchStart({ channel, note, e }: { channel: ValidInstruments; note: Note; e: TouchEvent }): [boolean, boolean, string] {
-	e.preventDefault();
-	if (e.touches.length > 1) {
-	}
+export function handleTouchStart({ channel, note, e }: { channel: ValidInstruments; note: Note; e: PointerEvent }): [boolean, boolean, string] {
+	// e.preventDefault();
+	console.log(note);
 	if (channel instanceof Synthetizer) {
 		channel.noteOn(0, note.value as number, 80, false);
 	} else {
@@ -98,9 +97,9 @@ export function handleTouchMove({ lastKey, channel, e }: { lastKey: string; chan
 	console.log("currentKey", currentKey);
 	console.log("lastKey", lastKey);
 	if (currentKey !== lastKey) {
-    if (channel instanceof Synthetizer) {
-      // TODO implement touch
-      // @ts-ignore
+		if (channel instanceof Synthetizer) {
+			// TODO implement touch
+			// @ts-ignore
 			channel.noteOn(0, currentKey, velocity, false);
 		} else {
 			channel.start({ note: currentKey });
@@ -124,13 +123,13 @@ export function handleMouseEnter({
 	e: MouseEvent;
 	velocity: number;
 }): [boolean] {
-	let keyIsDown = false;
+  let keyIsDown = false;
 	if (mouseDown) {
 		velocity = getVelocity(e);
-    if (channel instanceof Synthetizer) {
-      channel.noteOn(0, note.value as number, velocity, false);
+		if (channel instanceof Synthetizer) {
+			channel.noteOn(0, note.value as number, velocity, false);
 		} else {
-      channel.start({ note: note.value, velocity });
+			channel.start({ note: note.value, velocity });
 		}
 		keyIsDown = true;
 	}

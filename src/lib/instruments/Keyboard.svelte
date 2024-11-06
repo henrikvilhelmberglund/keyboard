@@ -4,7 +4,6 @@
 	import { soundfontNames } from "$lib/soundfontInstrumentNames/musyng/musyng";
 	import type { InstrumentType, Note, ValidInstruments } from "$lib/types";
 	import { Soundfont, getSoundfontNames, ElectricPiano, getElectricPianoNames, DrumMachine, getDrumMachineNames, SplendidGrandPiano, Mellotron, getMellotronNames } from "smplr";
-	import { SoundFont2 } from "soundfont2";
 	import { Synthetizer } from "spessasynth_lib";
 
 	let { instrumentType, library }: { instrumentType: string; library: string } = $props();
@@ -304,26 +303,59 @@
 				<!-- on:touchmove={(e) => ([keyDown[currentKey], lastKey] = handleTouchMove({ touching, velocity, mouseDown, channel, note, e, lastKey }))} -->
 				<button
 					id={note.name}
-					ontouchstart={(e) => {
+					onpointerdown={(e) => {
 						context.resume();
-						if (channel) [touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
+						if (e.pointerType === "touch") {
+							if (channel) [touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
+						}
+						if (e.pointerType === "mouse") {
+							if (!touching && channel) [mouseDown, keyDown[note.name], velocity] = handleMouseDown({ channel, note, e, velocity });
+						}
 					}}
-					ontouchend={() => {
-						if (channel) [touching, keyDown[note.name]] = handleTouchEnd({ channel, note });
+					onpointerenter={(e) => {
+						if (e.pointerType === "touch") {
+							if (channel) [touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
+						}
+						if (e.pointerType === "mouse") {
+							if (!touching && channel) [keyDown[note.name]] = handleMouseEnter({ velocity, mouseDown, channel, note, e });
+						}
 					}}
-					onmousedown={(e) => {
+					onpointerup={(e) => {
+						if (e.pointerType === "touch") {
+							if (channel) [touching, keyDown[note.name]] = handleTouchEnd({ channel, note });
+						}
+						if (e.pointerType === "mouse") {
+							if (!touching && channel) [mouseDown, keyDown[note.name]] = handleMouseUp({ channel, note });
+						}
+					}}
+					onpointerout={(e) => {
+						if (e.pointerType === "touch") {
+							if (channel) [touching, keyDown[note.name]] = handleTouchEnd({ channel, note });
+						}
+						if (e.pointerType === "mouse") {
+							if (!touching && channel) [keyDown[note.name]] = handleMouseLeave({ channel, note });
+						}
+					}}
+					ontouchmove={(e) => {
+						if (!e.touches) return;
+
 						context.resume();
-						if (!touching && channel) [mouseDown, keyDown[note.name], velocity] = handleMouseDown({ channel, note, e, velocity });
+						let myLocation = e.touches[0];
+						let realTarget = document.elementFromPoint(myLocation.clientX, myLocation.clientY);
+						let realNote = notes[notes.findIndex((i) => i.name === realTarget.id)];
+						let realNoteSnapshot = $state.snapshot(realNote);
+						// console.log(realNoteSnapshot);
+						// console.log(realTarget)
+						if (channel && realNoteSnapshot && realNoteSnapshot.name !== lastKey)
+							[touching, keyDown[realNoteSnapshot.name], lastKey] = handleTouchStart({ channel, note: realNoteSnapshot, e });
+						// if (channel && realNoteSnapshot && realNoteSnapshot.name === lastKey) [touching, keyDown[realNoteSnapshot.name]] = handleTouchEnd({ channel, note });
 					}}
-					onmouseup={() => {
-						if (!touching && channel) [mouseDown, keyDown[note.name]] = handleMouseUp({ channel, note });
-					}}
-					onmouseenter={(e) => {
-						if (!touching && channel) [keyDown[note.name]] = handleMouseEnter({ velocity, mouseDown, channel, note, e });
-					}}
-					onmouseleave={() => {
-						if (!touching && channel) [keyDown[note.name]] = handleMouseLeave({ channel, note });
-					}}
+					ontouchstart={(e) => {}}
+					ontouchend={() => {}}
+					onmousedown={(e) => {}}
+					onmouseup={() => {}}
+					onmouseenter={(e) => {}}
+					onmouseleave={() => {}}
 					onkeydown={(e) => {
 						// console.log(e);
 						context.resume();
