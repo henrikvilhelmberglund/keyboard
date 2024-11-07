@@ -152,3 +152,12 @@ export function handleMouseLeaveDrums({ touching }: { touching: boolean }) {
 	let keyIsDown = false;
 	return [keyIsDown];
 }
+
+export function absorbEvent(event: TouchEvent) {
+  var e = event || window.event;
+  e.preventDefault && e.preventDefault();
+  e.stopPropagation && e.stopPropagation();
+  e.cancelBubble = true;
+  e.returnValue = false;
+  return false;
+}

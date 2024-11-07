@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
+	import { absorbEvent, handleMouseDown, handleMouseEnter, handleMouseLeave, handleMouseUp, handleTouchEnd, handleTouchMove, handleTouchStart } from "$lib/helpers";
 	import { getMidiNotes, noteValueOffset, getDrumNotes } from "$lib/midinotes";
 	import { soundfontNames } from "$lib/soundfontInstrumentNames/musyng/musyng";
 	import type { InstrumentType, Note, ValidInstruments } from "$lib/types";
@@ -257,9 +257,19 @@
 			await (<Synthetizer>channel).soundfontManager.reloadManager(soundFontArrayBuffer);
 		});
 	}
+
+	function actionTouchStart(node) {
+		node.addEventListener("touchstart", absorbEvent);
+
+		return {
+			destroy() {
+				node.removeEventListener("touchstart", absorbEvent);
+			},
+		};
+	}
 </script>
 
-<p class="absolute left-[50vw] top-14 text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
+<p class="absolute left-[50vw] lg:translate-x-0 translate-x-[-50%] lg:top-14 -top-4 text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
 <div class="flex">
 	<select class="mr-2 mt-4 px-2" aria-label="octave picker select" bind:value={octave} name="" id="">
 		<option value="1">1</option>
@@ -303,6 +313,7 @@
 				<!-- on:touchmove={(e) => ([keyDown[currentKey], lastKey] = handleTouchMove({ touching, velocity, mouseDown, channel, note, e, lastKey }))} -->
 				<button
 					id={note.name}
+          use:actionTouchStart
 					onpointerdown={(e) => {
 						context.resume();
 						if (e.pointerType === "touch") {
@@ -344,14 +355,26 @@
 						let realTarget = document.elementFromPoint(myLocation.clientX, myLocation.clientY);
 						let realNote = notes[notes.findIndex((i) => i.name === realTarget.id)];
 						let realNoteSnapshot = $state.snapshot(realNote);
+            let lastNote = notes[notes.findIndex((i) => i.name === lastKey)];
 						// console.log(realNoteSnapshot);
 						// console.log(realTarget)
-						if (channel && realNoteSnapshot && realNoteSnapshot.name !== lastKey)
+						if (channel && realNoteSnapshot && realNoteSnapshot.name !== lastKey) {
+							keyDown[lastKey] = false;
+
+              [touching, keyDown[note.name]] = handleTouchEnd({ channel, note: lastNote });
 							[touching, keyDown[realNoteSnapshot.name], lastKey] = handleTouchStart({ channel, note: realNoteSnapshot, e });
+						}
 						// if (channel && realNoteSnapshot && realNoteSnapshot.name === lastKey) [touching, keyDown[realNoteSnapshot.name]] = handleTouchEnd({ channel, note });
 					}}
-					ontouchstart={(e) => {}}
-					ontouchend={() => {}}
+					ontouchend={(e) => {
+						console.log(e);
+						let myLocation = e.changedTouches[0];
+						let realTarget = document.elementFromPoint(myLocation.clientX, myLocation.clientY);
+						let realNote = notes[notes.findIndex((i) => i.name === realTarget.id)];
+						let realNoteSnapshot = $state.snapshot(realNote);
+						keyDown[realNoteSnapshot.name] = false;
+            [touching, keyDown[note.name]] = handleTouchEnd({ channel, note: realNoteSnapshot });
+					}}
 					onmousedown={(e) => {}}
 					onmouseup={() => {}}
 					onmouseenter={(e) => {}}
