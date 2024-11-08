@@ -349,9 +349,10 @@
 					}}
 					ontouchmove={(e) => {
 						if (!e.touches) return;
+						// if (e.touches.length > 1) return; 
 
 						context.resume();
-						let myLocation = e.touches[0];
+						let myLocation = e.touches[e.touches.length-1];
 						let realTarget = document.elementFromPoint(myLocation.clientX, myLocation.clientY);
 						let realNote = notes[notes.findIndex((i) => i.name === realTarget.id)];
 						let realNoteSnapshot = $state.snapshot(realNote);
