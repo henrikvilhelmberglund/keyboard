@@ -5,6 +5,7 @@
 	import type { InstrumentType, Note, ValidInstruments } from "$lib/types";
 	import { Soundfont, getSoundfontNames, ElectricPiano, getElectricPianoNames, DrumMachine, getDrumMachineNames, SplendidGrandPiano, Mellotron, getMellotronNames } from "smplr";
 	import { Synthetizer } from "spessasynth_lib";
+	import { SvelteMap } from "svelte/reactivity";
 
 	let { instrumentType, library }: { instrumentType: string; library: string } = $props();
 
@@ -47,6 +48,8 @@
 	let displayInstrument = $derived(instrumentList[instrumentValue]);
 	let channel = $state(initializeInstrumentType());
 	let notes = $state(initializeInstrumentNotes());
+  let touchingNotes = new SvelteMap();
+  let touchingNotesStart = new SvelteMap();
 
 	// drums use channel for notes but notes declaration can run before the channel is fully loaded, so update after loading is complete
 	$effect(() => {
@@ -317,6 +320,8 @@
 					onpointerdown={(e) => {
 						context.resume();
 						if (e.pointerType === "touch") {
+              // touchingNotes.set(note.name, note.name);
+              touchingNotesStart.set(note.name, note.name);
 							if (channel) [touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
 						}
 						if (e.pointerType === "mouse") {
@@ -325,7 +330,7 @@
 					}}
 					onpointerenter={(e) => {
 						if (e.pointerType === "touch") {
-							if (channel) [touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
+							// if (channel) [touching, keyDown[note.name], lastKey] = handleTouchStart({ channel, note, e });
 						}
 						if (e.pointerType === "mouse") {
 							if (!touching && channel) [keyDown[note.name]] = handleMouseEnter({ velocity, mouseDown, channel, note, e });
@@ -353,16 +358,25 @@
 
 						context.resume();
 						let myLocation = e.touches[e.touches.length-1];
+            let myLocationTarget = myLocation.target as HTMLButtonElement;
 						let realTarget = document.elementFromPoint(myLocation.clientX, myLocation.clientY);
 						let realNote = notes[notes.findIndex((i) => i.name === realTarget.id)];
 						let realNoteSnapshot = $state.snapshot(realNote);
-            let lastNote = notes[notes.findIndex((i) => i.name === lastKey)];
+            touchingNotes.set(myLocationTarget.id, realNoteSnapshot.name);
+            // touchingNotesStart.set(myLocationTarget.id, myLocationTarget.id);
 						// console.log(realNoteSnapshot);
+            // console.log("myLocationTarget id", myLocationTarget.id)
+            // console.log("realnotesnapshot name", realNoteSnapshot.name)
+            // console.log("touchingNotes get",touchingNotes.get(myLocationTarget.id))
+            // console.log("touchingNotesStart get",touchingNotesStart.get(myLocationTarget.id))
 						// console.log(realTarget)
-						if (channel && realNoteSnapshot && realNoteSnapshot.name !== lastKey) {
-							keyDown[lastKey] = false;
-
+						if (channel && realNoteSnapshot && touchingNotesStart.get(myLocationTarget.id) !== touchingNotes.get(myLocationTarget.id)) {
+              // keyDown[lastKey] = false;
+              let lastNote = notes[notes.findIndex((i) => i.name === touchingNotesStart.get(myLocationTarget.id))];
+              keyDown[touchingNotesStart.get(myLocationTarget.id)] = false;
               [touching, keyDown[note.name]] = handleTouchEnd({ channel, note: lastNote });
+              touchingNotesStart.set(myLocationTarget.id, touchingNotes.get(myLocationTarget.id));
+              
 							[touching, keyDown[realNoteSnapshot.name], lastKey] = handleTouchStart({ channel, note: realNoteSnapshot, e });
 						}
 						// if (channel && realNoteSnapshot && realNoteSnapshot.name === lastKey) [touching, keyDown[realNoteSnapshot.name]] = handleTouchEnd({ channel, note });
@@ -372,6 +386,13 @@
 						let myLocation = e.changedTouches[0];
 						let realTarget = document.elementFromPoint(myLocation.clientX, myLocation.clientY);
 						let realNote = notes[notes.findIndex((i) => i.name === realTarget.id)];
+            if (!realNote) {
+              // hack for edge keys
+              keyDown[minimumNoteValue] = false;
+              keyDown[maximumNoteValue] = false;
+              handleTouchEnd({ channel, note: minimumNoteValue });
+              handleTouchEnd({ channel, note: maximumNoteValue });
+            }
 						let realNoteSnapshot = $state.snapshot(realNote);
 						keyDown[realNoteSnapshot.name] = false;
             [touching, keyDown[note.name]] = handleTouchEnd({ channel, note: realNoteSnapshot });
