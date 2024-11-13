@@ -17,7 +17,7 @@ function getVelocity(e: MouseEvent) {
 
 export function handleTouchStart({ channel, note, e }: { channel: ValidInstruments; note: Note; e: TouchEvent | PointerEvent }): [boolean, boolean, string] {
 	// e.preventDefault();
-	console.log(note);
+	// console.log(note);
 	if (channel instanceof Synthetizer) {
 		channel.noteOn(0, note.value as number, 80, false);
 	} else {
