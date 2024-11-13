@@ -7,7 +7,7 @@
 	import { Synthetizer } from "spessasynth_lib";
 	import { SvelteMap } from "svelte/reactivity";
 
-	let { instrumentType, library }: { instrumentType: string; library: string } = $props();
+	let { instrumentType, library, startingOctave }: { instrumentType: string; library: string; startingOctave: string } = $props();
 
 	const DEV = false;
 
@@ -31,7 +31,7 @@
 
 	const context = new AudioContext();
 
-	let octave = $state("4");
+	let octave = $state(startingOctave ? startingOctave : "4");
 	let size = $state("100");
 	let minimumNoteValue = $derived(parseInt(octave) * 12);
 	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + (size === "100" ? 24 : size === "150" ? 16 : size === "200" ? 12 : 24) : parseInt(octave) * 12 + (size === "100" ? 48 : size === "150" ? 36 : size === "200" ? 24 : 48));
@@ -122,6 +122,9 @@
 		if (instrumentType === "drums" && library === "smplr") {
 			return "TR-808";
 		}
+    if (instrumentType === "soundfont-drums" && library === "smplr") {
+			return "a";
+		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
 			return "Marimba";
 		}
@@ -140,6 +143,9 @@
 		}
 		if (instrumentType === "drums" && library === "smplr") {
 			return getDrumMachineNames();
+		}
+		if (instrumentType === "soundfont-drums" && library === "smplr") {
+			return getSoundfontNames();
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
 			return soundfontNames;
@@ -162,6 +168,9 @@
 		}
 		if (instrumentType === "drums" && library === "smplr") {
 			return getDrumNotes(channel as DrumMachine);
+		}
+    if (instrumentType === "soundfont-drums" && library === "smplr") {
+			return getMidiNotes();
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
 			return getMidiNotes();
@@ -199,6 +208,13 @@
 			return new DrumMachine(context, {
 				instrument,
 				volume: 60,
+			});
+		}
+    if (instrumentType === "soundfont-drums" && library === "smplr") {
+			return new Soundfont(context, {
+				instrumentUrl: "https://henrikvilhelmberglund.com/midi-js-compat-soundfonts/GM-soundfonts/FluidR3_GM/drumkits/Standard-mp3.js",
+				volume: 80,
+				// loadLoopData: true
 			});
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
