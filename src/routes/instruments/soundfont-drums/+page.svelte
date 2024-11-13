@@ -4,7 +4,7 @@
   
 </script>
 
-<Keyboard instrumentType="soundfontdrums" library="smplr" />
+<Keyboard instrumentType="soundfont-drums" library="smplr" startingOctave="3" />
 
 <style>
   
