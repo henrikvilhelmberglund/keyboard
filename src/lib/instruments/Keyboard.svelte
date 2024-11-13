@@ -32,8 +32,9 @@
 	const context = new AudioContext();
 
 	let octave = $state("4");
+	let size = $state("100");
 	let minimumNoteValue = $derived(parseInt(octave) * 12);
-	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + 24 : parseInt(octave) * 12 + 48);
+	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + (size === "100" ? 24 : size === "150" ? 16 : size === "200" ? 12 : 24) : parseInt(octave) * 12 + (size === "100" ? 48 : size === "150" ? 36 : size === "200" ? 24 : 48));
 	let mouseDown = $state(false);
 	let keyDown: { [key: string]: boolean } = $state({});
 	let touching = $state(false);
@@ -273,6 +274,11 @@
 </script>
 
 <p class="absolute left-[50vw] lg:translate-x-0 translate-x-[-50%] lg:top-14 -top-4 text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
+<select class="mr-2 mt-1 px-1 left-0 absolute" aria-label="size select" bind:value={size} name="" id="">
+	<option value="100">100%</option>
+	<option value="150">150%</option>
+	<option value="200">200%</option>
+</select>
 <div class="flex">
 	<select class="mr-2 mt-4 px-2" aria-label="octave picker select" bind:value={octave} name="" id="">
 		<option value="1">1</option>
@@ -387,14 +393,14 @@
 						// if (channel && realNoteSnapshot && realNoteSnapshot.name === lastKey) [touching, keyDown[realNoteSnapshot.name]] = handleTouchEnd({ channel, note });
 					}}
 					ontouchend={(e) => {
-						console.log(e);
+						// console.log(e);
 						let myLocation = e.changedTouches[0];
 						let realTarget = document.elementFromPoint(myLocation.clientX, myLocation.clientY);
 						let realNote = notes[notes.findIndex((i) => i.name === realTarget?.id)];
 						if (!realNote && channel) {
 							// hack for edge keys
-							keyDown[minimumNoteValue] = false;
-							keyDown[maximumNoteValue] = false;
+							keyDown[getMidiNotes()[minimumNoteValue].name] = false;
+							keyDown[getMidiNotes()[maximumNoteValue].name] = false;
 							handleTouchEnd({ channel, note: { name: "N/A", value: minimumNoteValue } });
 							handleTouchEnd({ channel, note: { name: "N/A", value: maximumNoteValue } });
 						}
@@ -440,8 +446,17 @@
 					}}
 					class:black={note.name.includes("#")}
 					class:black-left={note.name.match(/C#|F#/)}
+					class:-translate-x-[1.25rem]={note.name.match(/C#|F#/) && size === "100"}
+					class:-translate-x-[1.85rem]={note.name.match(/C#|F#/) && size === "150"}
+					class:-translate-x-[2.45rem]={note.name.match(/C#|F#/) && size === "200"}
 					class:black-right={note.name.match(/D#|A#/)}
+					class:-translate-x-[0.55rem]={note.name.match(/D#|A#/) && size === "100"}
+					class:-translate-x-[0.95rem]={note.name.match(/D#|A#/) && size === "150"}
+					class:-translate-x-[1.35rem]={note.name.match(/D#|A#/) && size === "200"}
 					class:black-middle={note.name.includes("G#")}
+					class:-translate-x-[0.90rem]={note.name.includes("G#") && size === "100"}
+					class:-translate-x-[1.351rem]={note.name.includes("G#") && size === "150"}
+					class:-translate-x-[1.75rem]={note.name.includes("G#") && size === "200"}
 					class:!outline-primary-700={keyDown[note.name]}
 					class:!dark:outline-primary-950={keyDown[note.name]}
 					class:!outline-1={keyDown[note.name]}
@@ -451,9 +466,16 @@
 					class:!to-primary-100={keyDown[note.name]}
 					class:!bg-primary-300={keyDown[note.name]}
 					class:!dark:bg-primary-600={keyDown[note.name]}
-					class="dark:bg-primary-900 dark:outline-primary-500/40 z-100 outline-primary-950/40 outline-solid shadow-primary-600/30 z-10 mx-0 h-64 w-12 rounded-md rounded-t-none bg-white bg-gradient-to-b shadow-md outline-1">
+					data-TODO="TODO fix this below when new multiple utility class directive is available"
+					class:w-12={size === "100" && !note.name.includes("#")}
+					class:w-18={size === "150" && !note.name.includes("#")}
+					class:w-24={size === "200" && !note.name.includes("#")}
+					class:w-7={size === "100" && note.name.includes("#")}
+					class:w-10.5={size === "150" && note.name.includes("#")}
+					class:w-14={size === "200" && note.name.includes("#")}
+					class="dark:bg-primary-900 dark:outline-primary-500/40 z-100 outline-primary-950/40 outline-solid shadow-primary-600/30 z-10 mx-0 h-64 rounded-md rounded-t-none bg-white bg-gradient-to-b shadow-md outline-1">
 					{#if !note.name.includes("#")}
-						<span class="pointer-events-none relative left-0 top-0 top-1 block h-64 w-12">
+						<span class="pointer-events-none relative left-0 top-0 top-1 block h-64 {size === '100' ? 'w-12' : size === '150' ? 'w-18' : size === '200' ? 'w-24' : 'w-7'}">
 							<span class="bg-primary-800/20 dark:bg-primary-950 absolute bottom-1 left-0 h-3 w-full rounded-md rounded-t-none"></span>
 							{#if keyDown[note.name] && !document.documentElement.classList.contains("dark")}
 								<!-- ??? -->
@@ -484,13 +506,13 @@
 
 <style>
 	.black-left {
-		@apply absolute h-40 w-7 -translate-x-[1.25rem] bg-black shadow-none outline-0;
+		@apply absolute h-40 bg-black shadow-none outline-0;
 	}
 	.black-right {
-		@apply absolute h-40 w-7 -translate-x-[0.55rem] bg-black shadow-none outline-0;
+		@apply absolute h-40 bg-black shadow-none outline-0;
 	}
 	.black-middle {
-		@apply absolute h-40 w-7 -translate-x-[0.9rem] bg-black shadow-none outline-0;
+		@apply absolute h-40 bg-black shadow-none outline-0;
 	}
 
 	#keyboard button {
