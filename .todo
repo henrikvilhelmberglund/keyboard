@@ -8,4 +8,6 @@
 
 ✔ Create sf2 repo for hosting of the split soundfonts @done(24-11-08 16:05)
 
-☐ Save active note on touchstart (instead of only one lastKey), use in touchmove
+✔ Save active note on touchstart (instead of only one lastKey), use in touchmove @done(24-11-13 17:17)
+
+☐ Save selected instrument/octave/size in URL
