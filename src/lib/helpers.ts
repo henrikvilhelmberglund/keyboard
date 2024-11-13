@@ -49,7 +49,7 @@ export function handleTouchEndDrums(): [boolean, boolean] {
 
 export function handleMouseDown({ channel, note, e, velocity }: { channel: ValidInstruments; note: Note; e: MouseEvent; velocity: number }): [boolean, boolean, number] {
 	// if (touching) return;
-	console.log(e);
+	// console.log(e);
 	velocity = getVelocity(e);
 	// console.log(channel.sampleNames)
 
