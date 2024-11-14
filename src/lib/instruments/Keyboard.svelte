@@ -6,8 +6,19 @@
 	import { Soundfont, getSoundfontNames, ElectricPiano, getElectricPianoNames, DrumMachine, getDrumMachineNames, SplendidGrandPiano, Mellotron, getMellotronNames } from "smplr";
 	import { Synthetizer } from "spessasynth_lib";
 	import { SvelteMap } from "svelte/reactivity";
+	import { queryParamsState } from "kit-query-params";
+	import type { PageData } from "../../routes/$types";
 
-	let { instrumentType, library, startingOctave }: { instrumentType: string; library: string; startingOctave: string } = $props();
+	let { instrumentType, library, startingOctave, data }: { instrumentType: string; library: string; startingOctave: string, data: PageData } = $props();
+
+	const queryParams = queryParamsState({
+		schema: {
+			instrument: "string",
+			octave: "string",
+			size: "string",
+		},
+		shallow: true,
+	});
 
 	const DEV = false;
 
@@ -31,10 +42,14 @@
 
 	const context = new AudioContext();
 
-	let octave = $state(startingOctave ? startingOctave : "4");
-	let size = $state("100");
+	let octave = $state(data.octave ? data.octave : startingOctave ? startingOctave : "4");
+	let size = $state(data.size ? data.size : "100");
 	let minimumNoteValue = $derived(parseInt(octave) * 12);
-	let maximumNoteValue = $derived(isMobileDevice() ? parseInt(octave) * 12 + (size === "100" ? 24 : size === "150" ? 16 : size === "200" ? 12 : 24) : parseInt(octave) * 12 + (size === "100" ? 48 : size === "150" ? 36 : size === "200" ? 24 : 48));
+	let maximumNoteValue = $derived(
+		isMobileDevice()
+			? parseInt(octave) * 12 + (size === "100" ? 24 : size === "150" ? 16 : size === "200" ? 12 : 24)
+			: parseInt(octave) * 12 + (size === "100" ? 48 : size === "150" ? 36 : size === "200" ? 24 : 48)
+	);
 	let mouseDown = $state(false);
 	let keyDown: { [key: string]: boolean } = $state({});
 	let touching = $state(false);
@@ -110,6 +125,10 @@
 	// }
 
 	function initializeStartingInstrument() {
+		if (data?.instrument) {
+			return data.instrument;
+		}
+
 		if (instrumentType === "keyboard" && library === "smplr") {
 			return "marimba";
 		}
@@ -122,8 +141,8 @@
 		if (instrumentType === "drums" && library === "smplr") {
 			return "TR-808";
 		}
-    if (instrumentType === "soundfont-drums" && library === "smplr") {
-			return "a";
+		if (instrumentType === "soundfont-drums" && library === "smplr") {
+			return "Default";
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
 			return "Marimba";
@@ -145,7 +164,7 @@
 			return getDrumMachineNames();
 		}
 		if (instrumentType === "soundfont-drums" && library === "smplr") {
-			return getSoundfontNames();
+			return ["Default"];
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
 			return soundfontNames;
@@ -169,7 +188,7 @@
 		if (instrumentType === "drums" && library === "smplr") {
 			return getDrumNotes(channel as DrumMachine);
 		}
-    if (instrumentType === "soundfont-drums" && library === "smplr") {
+		if (instrumentType === "soundfont-drums" && library === "smplr") {
 			return getMidiNotes();
 		}
 		if (instrumentType === "soundfont" && library === "spessasynth") {
@@ -210,7 +229,7 @@
 				volume: 60,
 			});
 		}
-    if (instrumentType === "soundfont-drums" && library === "smplr") {
+		if (instrumentType === "soundfont-drums" && library === "smplr") {
 			return new Soundfont(context, {
 				instrumentUrl: "https://henrikvilhelmberglund.com/midi-js-compat-soundfonts/GM-soundfonts/FluidR3_GM/drumkits/Standard-mp3.js",
 				volume: 80,
@@ -290,13 +309,29 @@
 </script>
 
 <p class="absolute left-[50vw] lg:translate-x-0 translate-x-[-50%] lg:top-14 -top-4 text-center text-xl dark:text-white lg:left-0">{displayInstrument}</p>
-<select class="mr-2 mt-1 px-1 left-0 absolute" aria-label="size select" bind:value={size} name="" id="">
+<select
+	onchange={() => {
+		queryParams.size = size;
+	}}
+	class="mr-2 mt-1 px-1 left-0 absolute"
+	aria-label="size select"
+	bind:value={size}
+	name=""
+	id="">
 	<option value="100">100%</option>
 	<option value="150">150%</option>
 	<option value="200">200%</option>
 </select>
 <div class="flex">
-	<select class="mr-2 mt-4 px-2" aria-label="octave picker select" bind:value={octave} name="" id="">
+	<select
+		onchange={() => {
+			queryParams.octave = octave;
+		}}
+		class="mr-2 mt-4 px-2"
+		aria-label="octave picker select"
+		bind:value={octave}
+		name=""
+		id="">
 		<option value="1">1</option>
 		<option value="2">2</option>
 		<option value="3">3</option>
@@ -315,6 +350,7 @@
 		max="127"
 		bind:value={instrumentValue}
 		onchange={() => {
+			queryParams.instrument = displayInstrument;
 			if (library === "smplr") {
 				instrument = instrumentList[instrumentValue];
 				channel = initializeInstrumentType();

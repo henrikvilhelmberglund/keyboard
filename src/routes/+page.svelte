@@ -11,10 +11,10 @@
 	// let color = "blue";
 	// $: if (browser) color = localStorage.color;
 
-	
+  const { data } = $props();
 </script>
 
-<Keyboard instrumentType="keyboard" library="smplr" />
+<Keyboard instrumentType="soundfont" library="spessasynth" {data} />
 
 <Footer />
 
